@@ -1,6 +1,16 @@
 /*
+    copyright (c) 2018 jones
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
     开源项目 https://github.com/jones2000/HQChart
 
+    jones_2000@163.com
+
+    系统录入的指标
+*/
+
+/*
     指标数据脚本 系统内置指标都写在这里
     Name：指标名字
     Description：指标描述信息
@@ -8,9 +18,29 @@
     KLineType:K线设置 -1=主图不显示K线(只在主图有效) 0=在副图显示K线 1=在副图显示K线(收盘价线) 2=在副图显示K线(美国线)
     InstructionType: 1=专家指示  2=五彩K线
     FloatPrecision: 小数位数 缺省=2
+    StringFormat: 1=带单位万/亿 2=原始格式  缺省=1
     YSplitScale:  Y固定刻度 [1,8,10]
     YSpecificMaxMin: 固定Y轴最大最小值 { Max: 9, Min: 0, Count: 3 };
 */
+
+//周期条件枚举
+var CONDITION_PERIOD =
+{
+    MINUTE_ID: 101,            //分钟      走势图
+    MULTIDAY_MINUTE_ID: 102,   //多日分钟  走势图
+    HISTORY_MINUTE_ID: 103,    //历史分钟  走势图
+
+    //K线周期
+    KLINE_DAY_ID: 0,
+    KLINE_WEEK_ID: 1,
+    KLINE_MONTH_ID: 2,
+    KLINE_YEAR_ID: 3,
+    KLINE_MINUTE_ID: 4,
+    KLINE_5_MINUTE_ID: 5,
+    KLINE_15_MINUTE_ID: 6,
+    KLINE_30_MINUTE_ID: 7,
+    KLINE_60_MINUTE_ID: 8
+};
 
 function JSIndexScript()
 {
@@ -48,7 +78,7 @@ JSIndexScript.prototype.Get=function(id)
             ['SG-XDT', this.SG_XDT], ['SG-SMX', this.SG_SMX], ['SG-LB', this.SG_LB], ['SG-PF', this.SG_PF],
             ['RAD', this.RAD], ['SHT', this.SHT], ['ZLJC', this.ZLJC], ['ZLMM', this.ZLMM], ['SLZT', this.SLZT],
             ['ADVOL', this.ADVOL], ['CYC', this.CYC], ['CYS', this.CYS], ['CYQKL', this.CYQKL],
-            ['SCR', this.SCR], ['ASR', this.ASR],['SAR',this.SAR],['TJCJL',this.TJCJL],
+            ['SCR', this.SCR], ['ASR', this.ASR], ['SAR', this.SAR], ['TJCJL', this.TJCJL], ['量比', this.VOLRate],
 
             ['EMPTY', this.EMPTY],  //什么都不显示的指标
             ['操盘BS点', this.FXG_BSPoint],
@@ -100,7 +130,7 @@ JSIndexScript.prototype.MA=function()
 {
     let data=
     {
-        Name:'MA', Description:'均线', IsMainIndex:true,
+        Name: 'MA', Description: '均线', IsMainIndex: true, StringFormat:2,
         Args:[ { Name:'M1', Value:5}, { Name:'M2', Value:10 }, { Name:'M3', Value:20} ],
         Script: //脚本
 'MA1:MA(CLOSE,M1);\n\
@@ -1770,6 +1800,19 @@ STICKLINE(VOL>MA(VOL,5)*2 AND V>V34*3 AND C<REF(C,1)*1.05 AND CROSS(C6,C) AND V>
     return data;
 }
 
+JSIndexScript.prototype.VOLRate = function () 
+{
+    let data =
+    {
+        Name: '量比', Description: '量比', IsMainIndex: false, Condition: { Period: [CONDITION_PERIOD.MINUTE_ID, CONDITION_PERIOD.MULTIDAY_MINUTE_ID] },
+        Args: [],
+        Script: //脚本
+            "LIANGBI:VOLR;"
+    };
+
+    return data;
+}
+
 /*
     飞龙四式-主图
 */
@@ -2856,7 +2899,11 @@ JSIndexScript.prototype.TEST = function ()
             Name: 'TEST', Description: '测试脚本', IsMainIndex: false,
             Args: [{ Name: 'N', Value: 10 }],
             Script: //脚本
-                'VAR2:PERIOD;'
+                //'VAR2:WEEK;'+
+                //'T1:INDEXC;'+
+                //'T2:=HYBLOCK;'
+
+                'DRAWRECTREL(0,0,500,500,RGB(255,255,0)), COLORRED;'
         };
 
     return data;

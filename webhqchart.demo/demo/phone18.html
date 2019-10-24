@@ -12,6 +12,7 @@
     <div id="kline" style="width: 900px;height:400px;position: relative;"></div>
 
     <script src="content/js/jquery.min.js"></script>
+    <script src="../jscommon/umychart.network.js"></script>
     <script src="../jscommon/umychart.js"></script>
     <script src="../jscommon/umychart.complier.js"></script>
     <script src="../jscommon/umychart.index.data.js"></script>
@@ -123,7 +124,7 @@
                     Border: //边框
                     {
                         Left:100,    //左边间距
-                        Right:300,     //右边间距
+                        Right:80,     //右边间距
                         Bottom:25
                     },
                     
@@ -136,7 +137,7 @@
 
                     ExtendChart:    //扩展图形
                     [
-                        {Name:'筹码分布', ShowType:1 }
+                        { Name:'筹码分布', ShowType:1, IsShowX:true , ShowXCount:3, Width:250 }
                     ],
 
                     Overlay:

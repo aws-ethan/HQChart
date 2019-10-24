@@ -1,3 +1,15 @@
+/*
+   Copyright (c) 2018 jones
+ 
+    http://www.apache.org/licenses/LICENSE-2.0
+
+   开源项目 https://github.com/jones2000/HQChart
+ 
+   jones_2000@163.com
+
+   个股行情数据类
+*/
+
 ////////////////////////////////////////////////////////////////////////////////////////
 //  股票数据
 //
@@ -169,6 +181,49 @@ function CompanyData() {
         this.Price = data.company.price;
         this.ReleaseDate = data.company.releasedate;
         this.Competence = data.company.corecompetence;
+    }
+}
+
+//板块信息
+function PlateData() {
+    this.Industry;  //行业分类
+    this.Region;    //地区
+    this.Concept;   //概念
+
+    this.SetData = function (data) {
+        this.SetIndustryData(data);
+        this.SetRegionData(data);
+        this.SetConceptData(data);
+    }
+
+    this.SetIndustryData = function (data) {
+        if (!data.industry) return
+
+        this.Industry = [];
+        for (let i in data.industry) {
+            let item = data.industry[i];
+            this.Industry.push({Name: item.name, Symbol: item.symbol});
+        }
+    }
+
+    this.SetRegionData = function (data) {
+        if (!data.region) return
+
+        this.Region = [];
+        for (let i in data.region) {
+            let item = data.region[i];
+            this.Region.push({Name: item.name, Symbol: item.symbol});
+        }
+    }
+
+    this.SetConceptData = function (data) {
+        if (!data.concept) return
+
+        this.Concept = [];
+        for (let i in data.concept) {
+            let item = data.concept[i];
+            this.Concept.push({Name: item.name, Symbol: item.symbol});
+        }
     }
 }
 
@@ -507,6 +562,25 @@ function StockData(symbol)
                 return this.Company.Competence;
         }
     }
+
+    this.Plate; //板块
+    this.GetPlate = function (tagID, field) {
+        if (!this.Plate)  //只请求一次
+        {
+            this.PlateTagID.add(tagID);
+            return null;
+        }
+
+        switch (field) {
+            case STOCK_FIELD_NAME.PLATE_INDUSTRY:
+                return this.Plate.Industry;
+            case STOCK_FIELD_NAME.PLATE_CONCEPT:
+                return this.Plate.Concept;
+            case STOCK_FIELD_NAME.PLATE_REGION:
+                return this.Plate.Region;
+        }
+    }
+
     this.TagID=new Set();       //绑定的控件id
     this.BaseDataTagID=new Set();   //基础数据的控件id
     this.HeatTagID=new Set();   //需要热度的控件id
@@ -525,6 +599,7 @@ function StockData(symbol)
     this.DDE10ID = new Set();
     this.EventTagID = new Set();        //股票事件/属性
 	this.CompanyTagID = new Set();      //个股资料 (就请求1次)
+    this.PlateTagID = new Set();        //板块 概念 地区
 
     this.AttachTagID=function(id)
     {
@@ -795,6 +870,13 @@ function StockData(symbol)
         this.Company = new CompanyData();
         this.Company.SetData(data);
     }
+
+    this.SetPlateData = function (data) {
+        if (!data.industry && !data.region && !data.concept) return;
+
+        this.Plate = new PlateData();
+        this.Plate.SetData(data);
+    }
     //所有数据
     this.SetData = function (data) 
     {
@@ -930,6 +1012,9 @@ var STOCK_FIELD_NAME=
 
 	//个股资料
     COMPANY_NAME: 53,    //公司全称
+    PLATE_INDUSTRY: 54, //所属行业
+    PLATE_CONCEPT: 55,  //概念
+    PLATE_REGION: 56,   //地区
     COMPANY_BUSINESS: 57,
     COMPANY_VOL: 58,
     COMPANY_PRICE: 59,
@@ -1077,6 +1162,12 @@ function StockRead(stock,tagID)
             case STOCK_FIELD_NAME.FINANCE_EPS:
             case STOCK_FIELD_NAME.FINANCE_BENFORD:
                 return data.GetFinance(this.TagID,field);
+
+            //行业分类
+            case STOCK_FIELD_NAME.PLATE_INDUSTRY:
+            case STOCK_FIELD_NAME.PLATE_CONCEPT:
+            case STOCK_FIELD_NAME.PLATE_REGION:
+                return data.GetPlate(this.TagID, field);
             
             //资金流 
             case STOCK_FIELD_NAME.CAPITAL_FLOW_DAY:
@@ -1134,6 +1225,301 @@ function StockRead(stock,tagID)
 
 }
 
+//历史数据  个股财务粉饰 || 大宗交易 || 股东减持 || 限售解禁 || 业绩预告 || 空头指标
+function JSStockHistory() {
+    this.Symbol;
+    this.Callback;      //UI回调
+    this.Order = -1;      //排序方向
+    this.SortField;     //排序字段
+    this.Field;         //返回字段
+    this.Plate;         //全市场
+    this.Data = new Map();          //数据
+    this.ApiUrl = g_JSStockResource.Domain + "/API/StockHistoryDay";
+    this.PageSize = 20 ;//一页请求10调数据
+    this.PageIndex = 1;
+    this.Count;//数据总数
+    this.currentData = null;//请求入参
+
+
+    this.RequsetData = function (condition, condition2) {
+        var self = this;
+        var currentSymbol = typeof(self.Symbol) == "string" ? [this.Symbol] : this.Symbol;
+        var currentSymbolLength = currentSymbol ? currentSymbol.length : 0;
+
+        if (this.Plate){
+            this.currentData = {
+                "plate": this.Plate,//["CNA.ci"],
+                "symbol": currentSymbol,
+                "start": 0,
+                "end": this.PageSize,
+                "field": this.Field,
+                "orderfield": this.SortField,
+                "order": this.Order,
+                "condition": condition.GetQuery(),
+                "condition2": condition2 ? condition2.GetQuery() : [],
+            }
+        }else{
+            this.currentData = {
+                "symbol": currentSymbol,
+                "start": 0,
+                "end": currentSymbolLength,
+                "field": this.Field,
+                "orderfield": this.SortField,
+                "order": this.Order,
+                "condition": condition.GetQuery(),
+                "condition2": condition2 ? condition2.GetQuery() : [],
+            }
+        }
+
+        $.ajax({
+            url: this.ApiUrl,
+            data: self.currentData,
+            method: 'POST',
+
+            dataType: 'json',
+            success: function (data) {
+                self.Count = data.data.count;
+                self.RecvData(data, condition);
+            },
+            fail: function (request) {
+                self.RecvError(request, condition);
+            }
+        });
+    }
+
+    this.GetNextPage = function () {
+        var self = this;
+
+        if (this.PageSize * this.PageIndex < this.Count){
+            this.currentData.start = this.PageSize * this.PageIndex;
+            this.PageIndex++;
+            this.currentData.end = this.PageSize * this.PageIndex;
+
+            $.ajax({
+                url: this.ApiUrl,
+                data: self.currentData,
+                method: 'POST',
+                dataType: 'json',
+                success: function (data) {
+                    self.RecvData(data);
+                },
+                fail: function (request) {
+                    self.RecvError(request);
+                }
+            });
+        }else{
+            alert("数据已全部加载")
+            // wx.showToast({
+            //     title: "数据已全部加载",
+            //     icon: 'success',
+            //     duration: 1000
+            // })
+        }
+
+    }
+
+    //结果处理  个股财务粉饰
+    this.RecvData = function (recvData, condition) {
+        let data = recvData.data;
+        for (let i in data.stock) {
+            let item = data.stock[i];
+            let strSymbol = item.symbol;
+            let stockData = {};
+            // console.log("this.Data.has(strSymbol)", this.Data, strSymbol, this.Data.has(strSymbol));
+            if (this.Data.has(strSymbol)) {
+                stockData = this.Data.get(strSymbol);
+            }
+            else {
+                stockData = {
+                    Symbol: item.symbol,
+                    Name: item.name,
+                    Data: new Map() //Map key=日期  value=Map(key=字段名, value=数值)
+                };
+
+                this.Data.set(strSymbol, stockData);
+            }
+
+            this.SetStockData(item, stockData);
+        }
+
+        if (this.Callback) this.Callback(this, condition);
+    }
+
+    this.SetStockData = function (data, stockData) {
+        for (let i in data.stockday) {
+            let item = data.stockday[i];
+            let date = item.date;
+            let dataMap = new Map();
+            this.SetFinanceData(item, dataMap);
+            this.SetBlocktradingData(item, dataMap);
+            this.SetChangesData(item, dataMap);
+            this.SetLiftingData(item, dataMap);
+            this.SetPforecastData(item, dataMap);
+            this.SetShortIndicatorsData(item, dataMap);
+            stockData.Data.set(date, dataMap);
+        }
+
+        return stockData;
+    }
+
+    this.SetFinanceData = function (recvData, dataMap) {
+        //1季度
+        var finnance = recvData.finance1;
+        if (finnance) {
+            if (!isNaN(finnance.nprofitincrease)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE1_NPROFITINCREASE, finnance.nprofitincrease);
+            if (!isNaN(finnance.nnprofitincrease)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE1_NNPROFITINCREASE, finnance.nnprofitincrease);
+            if (!isNaN(finnance.nnprofitspeed)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE1_NNPROFITSPEED, finnance.nnprofitspeed);
+            if (!isNaN(finnance.benford)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE1_BENFORD, finnance.benford);
+        }
+
+        var announcement = recvData.announcement1;
+        if (announcement) {
+            if (!isNaN(announcement.year)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE1_YEAR, announcement.year);
+            if (!isNaN(announcement.quarter)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE1_QUARTER, announcement.quarter);
+        }
+
+        //2季度
+        var finnance = recvData.finance2;
+        if (finnance) {
+            if (!isNaN(finnance.nprofitincrease)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE2_NPROFITINCREASE, finnance.nprofitincrease);
+            if (!isNaN(finnance.nnprofitincrease)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE2_NNPROFITINCREASE, finnance.nnprofitincrease);
+            if (!isNaN(finnance.nnprofitspeed)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE2_NNPROFITSPEED, finnance.nnprofitspeed);
+            if (!isNaN(finnance.benford)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE2_BENFORD, finnance.benford);
+        }
+
+        var announcement = recvData.announcement2;
+        if (announcement) {
+            if (!isNaN(announcement.year)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE2_YEAR, announcement.year);
+            if (!isNaN(announcement.quarter)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE2_QUARTER, announcement.quarter);
+        }
+
+        //3季度
+        var finnance = recvData.finance3;
+        if (finnance) {
+            if (!isNaN(finnance.nprofitincrease)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE3_NPROFITINCREASE, finnance.nprofitincrease);
+            if (!isNaN(finnance.nnprofitincrease)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE3_NNPROFITINCREASE, finnance.nnprofitincrease);
+            if (!isNaN(finnance.nnprofitspeed)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE3_NNPROFITSPEED, finnance.nnprofitspeed);
+            if (!isNaN(finnance.benford)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE3_BENFORD, finnance.benford);
+        }
+
+        var announcement = recvData.announcement3;
+        if (announcement) {
+            if (!isNaN(announcement.year)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE3_YEAR, announcement.year);
+            if (!isNaN(announcement.quarter)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE3_QUARTER, announcement.quarter);
+        }
+
+        //4季度
+        var finnance = recvData.finance4;
+        if (finnance) {
+            if (!isNaN(finnance.nprofitincrease)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE4_NPROFITINCREASE, finnance.nprofitincrease);
+            if (!isNaN(finnance.nnprofitincrease)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE4_NNPROFITINCREASE, finnance.nnprofitincrease);
+            if (!isNaN(finnance.nnprofitspeed)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE4_NNPROFITSPEED, finnance.nnprofitspeed);
+            if (!isNaN(finnance.benford)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE4_BENFORD, finnance.benford);
+        }
+
+        var announcement = recvData.announcement4;
+        if (announcement) {
+            if (!isNaN(announcement.year)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE4_YEAR, announcement.year);
+            if (!isNaN(announcement.quarter)) dataMap.set(STOCK_HISTORY_FIELD_NAME.FINANCE4_QUARTER, announcement.quarter);
+        }
+    }
+
+    //大宗交易
+    this.SetBlocktradingData = function (recvData, dataMap) {
+        var blocktrading = recvData.blocktrading;
+        if (blocktrading) {
+            dataMap.set(
+                STOCK_HISTORY_FIELD_NAME.BLOCK_TRADING,
+                {
+                    Premium: blocktrading.premium,////总溢价
+                    Price: blocktrading.price, //总成交价
+                    Vol: blocktrading.vol, //总成交量
+                    Amount: blocktrading.amount//成交额
+                }
+            );
+        }
+    }
+
+    //股东减持
+    this.SetChangesData = function (recvData, dataMap) {
+        var changes = recvData.changes;
+        if (changes) {
+            dataMap.set(
+                STOCK_HISTORY_FIELD_NAME.HOLDERS_CHANGES, {List: changes.list}
+            );
+        }
+    }
+
+    //限售解禁
+    this.SetLiftingData = function (recvData, dataMap) {
+        var lifting = recvData.lifting;
+        if (lifting) {
+            // console.log("lifting",lifting);
+            dataMap.set(
+                STOCK_HISTORY_FIELD_NAME.LIFTING, {Lifting: lifting}
+            );
+        }
+    }
+
+    //业绩公告
+    this.SetPforecastData = function (recvData, dataMap) {
+        var pforecast = recvData.pforecast;
+        if (pforecast) {
+            // console.log("pforecast", pforecast)
+            dataMap.set(
+                STOCK_HISTORY_FIELD_NAME.PFORECAST,
+                {
+                    Lowprofit: pforecast[0].lowprofit,////最低利润
+                    Highprofit: pforecast[0].highprofit, //最高利润
+                    Lowchange: pforecast[0].lowchange, //最小变动幅度
+                    Highchange: pforecast[0].highchange, //最小变动幅度
+                    Reportdate: pforecast[0].reportdate, //报告期
+                }
+            );
+        }
+    }
+
+    //空头指标
+    this.SetShortIndicatorsData = function (recvData, dataMap) {
+        // console.log("recvData,dataMap", recvData, dataMap);
+        var policy = recvData.policy;
+        if (policy) {
+            const targetedList = ['三只乌鸦', '乌云盖顶', '黄昏之星', '巨量阴线', '头肩顶', '射击之星', '倾盆大雨', '断头铡刀', '淡友反攻', '空方炮', '连续1周空头排列'];
+            let targetedCount = 0, timeList = [], latestTime = 0, latestName = '';
+            // console.table(policy); //policy
+            policy.forEach(e => {
+                let isTarget = targetedList.some(c => c === e.name);
+                if (isTarget) {
+                    targetedCount++;
+                    timeList.push(e.time);
+                }
+            });
+            if(!targetedCount){
+                latestName = '';
+            }else {
+                latestTime = Math.max.apply(timeList, timeList);
+                latestName = policy.find(e => e.time === latestTime).name;
+            }
+            console.log(latestName,targetedCount, "latestName-targetedCount");
+            dataMap.set(
+                STOCK_HISTORY_FIELD_NAME.SHORTIND_ICATORS,
+                {
+                    latestIndicatorName: latestName,///最新指标名称
+                    indicatorCount: targetedCount, //最新指标数量
+                }
+            );
+        }
+    }
+
+    this.RecvError = function (request, condition) {
+
+    }
+
+    this.CreateCondition = function (name) {
+        return new QueryCondition(name);
+    }
+}
+
 
 //初始化
 JSStock.Init=function()
@@ -1171,6 +1557,9 @@ JSStock.GetBlockMember = function (symbol)
 {
     return new BlockMember(symbol);
 }
+JSStock.GetBlockTop = function () {
+    return new BlockTop();
+}
 
 //走势图图片路径
 JSStock.GetMinuteImage=function(symbol)
@@ -1199,6 +1588,11 @@ JSStock.GetAnalylisPlate = function () {
   return new AnalylisPlate();
 }
 
+//获取历史数据
+JSStock.GetStockHistory = function () {
+    return new JSStockHistory();
+}
+
 var RECV_DATA_TYPE=
 {
     BASE_DATA:1,        //股票行情基础数据
@@ -1216,6 +1610,7 @@ var RECV_DATA_TYPE=
     BLOCK_MEMBER_DATA: 13,  //板块成员
     SHORT_TERM_DATA:14,      //短线精灵
 	COMPANY_DATA: 15,      //个股资料
+    PLATE_DATA: 16,        //板块(行业 概念 地区)
 
     
 
@@ -1252,7 +1647,7 @@ function JSStock()
     this.AutoUpateTimeout=15000;    //更新频率
     this.Timeout;
 
-    this.IsWechatApp=false; //是否是小程序模式
+    this.NetworkFilter;         //网络过滤接口 function(data, callback)
 
     this.GetStockRead=function(tagID,callback)
     {
@@ -1319,6 +1714,8 @@ function JSStock()
         var aryDDE=[], aryDDE3=[], aryDDE5=[], aryDDE10=[];
         var aryEvent = new Array();
 		var aryCompany = new Array();       //个股资料
+        var aryPlate = new Array();         //板块(行业 概念 地址)
+
 
         for(var item of this.MapStock)
         {
@@ -1351,6 +1748,7 @@ function JSStock()
 
             if (subscribe.Event == null && subscribe.EventTagID.size > 0) aryEvent.push(symbol);
 			if (subscribe.Company == null && subscribe.CompanyTagID.size > 0) aryCompany.push(symbol);
+            if (item[1].Plate == null && item[1].PlateTagID.size > 0) aryPlate.push(item[0]);
         }
 
         if (aryBuySell.length>0) this.RequestBuySellData(aryBuySell);
@@ -1376,6 +1774,7 @@ function JSStock()
 
 		//个股资料
         if (aryCompany.length > 0) this.RequestCompanyData(aryCompany);
+        if (aryPlate.length > 0) this.RequestPlateData(aryPlate);
         this.ReqeustAllSortData();    //成分排序
     }
 
@@ -1385,29 +1784,33 @@ function JSStock()
     this.RequestBaseData=function(arySymbol)
     {
         var self=this;
+        var field= ["name","symbol","yclose","open","price","high","low","vol",
+            "amount","date","time","week","increase","exchangerate","amplitude"];
+
+        if (this.NetworkFilter)
+        {
+            var obj=
+            {
+                Name:'JSStock::RequestBaseData', //类名::方法
+                Explain:'股票基础数据',
+                ID:RECV_DATA_TYPE.BASE_DATA,
+                Request:{ Url:self.RealtimeApiUrl, Data:{ field:field, symbol:arySymbol }, Type:'POST' }, 
+                Self:this,
+                PreventDefault:false
+            };
+            this.NetworkFilter(obj, function(data) 
+            { 
+                self.RecvData(data,RECV_DATA_TYPE.BASE_DATA);
+            });
+
+            if (obj.PreventDefault==true) return;   //已被上层替换,不调用默认的网络请求
+        }
        
         $.ajax({
             url: this.RealtimeApiUrl,
             data:
             {
-                "field": [
-                    "name",
-                    "symbol",
-                    "yclose",
-                    "open",
-                    "price",
-                    "high",
-                    "low",
-                    "vol",
-                    "amount",
-                    "date",
-                    "time",
-                    "week",
-                    "increase",
-                    "exchangerate",
-                    "amplitude"
-                ],
-                "symbol": arySymbol,
+                "field": field,"symbol": arySymbol,
             },
             type:"post",
             dataType: "json",
@@ -1427,22 +1830,31 @@ function JSStock()
     this.RequestDerivativeData=function(arySymbol)
     {
         var self=this;
+        var field= ["name","symbol","marketvalue","flowmarketvalue","pe","pb","bookrate","bookdiffer"];
+        if (this.NetworkFilter)
+        {
+            var obj=
+            {
+                Name:'JSStock::RequestDerivativeData', //类名::方法
+                Explain:'实时衍生数据',
+                ID:RECV_DATA_TYPE.DERIVATIVE_DATA,
+                Request:{ Url:self.RealtimeApiUrl, Data:{ field:field, symbol:arySymbol }, Type:'POST' }, 
+                Self:this,
+                PreventDefault:false
+            };
+            this.NetworkFilter(obj, function(data) 
+            { 
+                self.RecvData(data,RECV_DATA_TYPE.DERIVATIVE_DATA);
+            });
+
+            if (obj.PreventDefault==true) return;   //已被上层替换,不调用默认的网络请求
+        }
        
         $.ajax({
             url: this.RealtimeApiUrl,
             data:
             {
-                "field": [
-                    "name",
-                    "symbol",
-                    "marketvalue",
-                    "flowmarketvalue",
-                    "pe",
-                    "pb",
-                    "bookrate",
-                    "bookdiffer",
-                ],
-                "symbol": arySymbol,
+                "field":field,"symbol": arySymbol,
             },
             type:"post",
             dataType: "json",
@@ -1462,18 +1874,32 @@ function JSStock()
     this.RequestFinanceData=function(arySymbol)
     {
         var self=this;
+        var field= ["name","symbol","roe","finance"];
+
+        if (this.NetworkFilter)
+        {
+            var obj=
+            {
+                Name:'JSStock::RequestFinanceData', //类名::方法
+                Explain:'财务数据',
+                ID:RECV_DATA_TYPE.FINANCE_DATA,
+                Request:{ Url:self.RealtimeApiUrl, Data:{ field:field, symbol:arySymbol }, Type:'POST' }, 
+                Self:this,
+                PreventDefault:false
+            };
+            this.NetworkFilter(obj, function(data) 
+            { 
+                self.RecvData(data,RECV_DATA_TYPE.FINANCE_DATA);
+            });
+
+            if (obj.PreventDefault==true) return;   //已被上层替换,不调用默认的网络请求
+        }
        
         $.ajax({
             url: this.RealtimeApiUrl,
             data:
             {
-                "field": [
-                    "name",
-                    "symbol",
-                    "roe",
-                    "finance"
-                ],
-                "symbol": arySymbol,
+                "field": field,"symbol": arySymbol,
             },
             type:"post",
             dataType: "json",
@@ -1492,32 +1918,33 @@ function JSStock()
      //请求买卖盘
      this.RequestBuySellData=function(arySymbol)
      {
-         var self=this;
+        var self=this;
+        var field=["name","symbol","yclose","open","price","high","low","vol","amount",
+            "date","time","week","increase","buy","sell","exchangerate","amplitude"];
+        if (this.NetworkFilter)
+        {
+            var obj=
+            {
+                Name:'JSStock::RequestBuySellData', //类名::方法
+                Explain:'买卖盘数据',
+                ID:RECV_DATA_TYPE.BUY_SELL_DATA,
+                Request:{ Url:self.RealtimeApiUrl, Data:{ field:field, symbol:arySymbol }, Type:'POST' }, 
+                Self:this,
+                PreventDefault:false
+            };
+            this.NetworkFilter(obj, function(data) 
+            { 
+                self.RecvData(data,RECV_DATA_TYPE.BUY_SELL_DATA);
+            });
+
+            if (obj.PreventDefault==true) return;   //已被上层替换,不调用默认的网络请求
+        }
         
          $.ajax({
              url: this.RealtimeApiUrl,
              data:
              {
-                 "field": [
-                     "name",
-                     "symbol",
-                     "yclose",
-                     "open",
-                     "price",
-                     "high",
-                     "low",
-                     "vol",
-                     "amount",
-                     "date",
-                     "time",
-                     "week",
-                     "increase",
-                     "buy",
-                     "sell",
-                     "exchangerate",
-                     "amplitude"
-                 ],
-                 "symbol": arySymbol,
+                 "field": field,"symbol": arySymbol,
              },
              type:"post",
              dataType: "json",
@@ -1536,67 +1963,77 @@ function JSStock()
      //请求分笔
      this.RequestDealData=function(arySymbol)
      {
-         var self=this;
+        var self=this;
+        var field=["name","symbol","price","high","low","vol","amount","date","time","increase","deal"];
+
+        if (this.NetworkFilter)
+        {
+            var obj=
+            {
+                Name:'JSStock::RequestDealData', //类名::方法
+                Explain:'分笔数据',
+                ID:RECV_DATA_TYPE.DEAL_DATA,
+                Request:{ Url:self.RealtimeApiUrl, Data:{ field:field, symbol:arySymbol }, Type:'POST' }, 
+                Self:this,
+                PreventDefault:false
+            };
+            this.NetworkFilter(obj, function(data) 
+            { 
+                self.RecvData(data,RECV_DATA_TYPE.DEAL_DATA);
+            });
+
+            if (obj.PreventDefault==true) return;   //已被上层替换,不调用默认的网络请求
+        }
         
-         $.ajax({
-             url: this.RealtimeApiUrl,
-             data:
-             {
-                 "field": [
-                     "name",
-                     "symbol",
-                     "price",
-                     "high",
-                     "low",
-                     "vol",
-                     "amount",
-                     "date",
-                     "time",
-                     "increase",
-                     "deal",
-                 ],
-                 "symbol": arySymbol,
-             },
-             type:"post",
-             dataType: "json",
-             async:true,
-             success: function (data)
-             {
-                 self.RecvData(data,RECV_DATA_TYPE.DEAL_DATA);
-             },
-             error:function(request)
-             {
-                 self.RecvError(request,RECV_DATA_TYPE.DEAL_DATA);
-             }
-         });
+        $.ajax({
+            url: this.RealtimeApiUrl,
+            data:
+            {
+                "field": field, "symbol": arySymbol
+            },
+            type:"post",
+            dataType: "json",
+            async:true,
+            success: function (data)
+            {
+                self.RecvData(data,RECV_DATA_TYPE.DEAL_DATA);
+            },
+            error:function(request)
+            {
+                self.RecvError(request,RECV_DATA_TYPE.DEAL_DATA);
+            }
+        });
      }
 
     //指数基础数据(包含上涨下跌家数)
     this.RequestIndexBaseData=function(arySymbol)
     {
         var self=this;
+        var field= ["name", "symbol", "yclose", "open","price","high","low","vol","amount","date","time","week","indextop","increase"];
+        if (this.NetworkFilter)
+        {
+            var obj=
+            {
+                Name:'JSStock::RequestIndexBaseData', //类名::方法
+                Explain:'指数基础数据(包含上涨下跌家数)',
+                ID:RECV_DATA_TYPE.INDEX_BASE_DATA,
+                Request:{ Url:self.RealtimeApiUrl, Data:{ field:field, symbol:arySymbol }, Type:'POST' }, 
+                Self:this,
+                PreventDefault:false
+            };
+            this.NetworkFilter(obj, function(data) 
+            { 
+                self.RecvData(data,RECV_DATA_TYPE.INDEX_BASE_DATA);
+            });
+
+            if (obj.PreventDefault==true) return;   //已被上层替换,不调用默认的网络请求
+        }
        
         $.ajax({
             url: this.RealtimeApiUrl,
             data:
             {
-                "field": [
-                    "name",
-                    "symbol",
-                    "yclose",
-                    "open",
-                    "price",
-                    "high",
-                    "low",
-                    "vol",
-                    "amount",
-                    "date",
-                    "time",
-                    "week",
-                    "indextop",
-                    "increase"
-                ],
-                "symbol": arySymbol,
+                "field":field,"symbol": arySymbol,
             },
             type:"post",
             dataType: "json",
@@ -1680,27 +2117,35 @@ function JSStock()
             default:
                 return;
         }
+
+        var field= ["name","symbol","yclose","open","price","high","low","vol","amount","date","time", "week", "increase", "exchangerate"];
+
+        if (this.NetworkFilter)
+        {
+            var obj=
+            {
+                Name:'JSStock::ReqeustSortData', //类名::方法
+                Explain:'板块排序数据',
+                ID:RECV_DATA_TYPE.SORT_DATA,
+                Request:{ Url:self.RealtimeApiUrl, 
+                    Data:{ field:field, plate: [sortItem.Plate] , orderfield:sortFiled, order:sortItem.Order,ordernull:1, filterstop:1 }, 
+                    Type:'POST' }, 
+                Self:this,
+                PreventDefault:false
+            };
+            this.NetworkFilter(obj, function(data) 
+            { 
+                self.RecvData(data,RECV_DATA_TYPE.SORT_DATA,sortData);
+            });
+
+            if (obj.PreventDefault==true) return;   //已被上层替换,不调用默认的网络请求
+        }
         
         $.ajax({
             url: this.RealtimeApiUrl,
             data:
             {
-                "field": [
-                    "name",
-                    "symbol",
-                    "yclose",
-                    "open",
-                    "price",
-                    "high",
-                    "low",
-                    "vol",
-                    "amount",
-                    "date",
-                    "time",
-                    "week",
-                    "increase",
-                    "exchangerate"
-                ],
+                "field":field,
                 "plate": [sortItem.Plate],
                 "orderfield":sortFiled,
                 "order":sortItem.Order,
@@ -1738,6 +2183,25 @@ function JSStock()
 
         if (!mapDay.has(id)) return;
         var value = mapDay.get(id);
+
+        if (this.NetworkFilter)
+        {
+            var obj=
+            {
+                Name:'JSStock::RequestSubDocumentData', //类名::方法
+                Explain:'子文档数据',
+                ID:value.RecvID,
+                Request:{ Url:self.RealtimeApiUrl, Data:{ field:["symbol",value.Field], symbol:arySymbol, start:0, end:50  }, Type:'POST' }, 
+                Self:this,
+                PreventDefault:false
+            };
+            this.NetworkFilter(obj, function(data) 
+            { 
+                self.RecvData(data, value.RecvID);
+            });
+
+            if (obj.PreventDefault==true) return;   //已被上层替换,不调用默认的网络请求
+        }
 
         $.ajax({
             url: this.RealtimeApiUrl,
@@ -1815,6 +2279,35 @@ function JSStock()
             }
         });
     }
+
+    this.RequestPlateData = function (arySymbol) {
+        var self = this;
+
+        $.ajax({
+            url: this.RealtimeApiUrl,
+            data: {
+                "field": [
+                    "name",
+                    "symbol",
+                    "industry",
+                    "region",
+                    "concept",
+                ],
+                "symbol": arySymbol,
+                "start": 0,
+                "end": 50
+            },
+            type: 'POST',
+            dataType: "json",
+            success: function (data) {
+                self.RecvData(data, RECV_DATA_TYPE.PLATE_DATA);
+            },
+            error: function (request) {
+                self.RecvError(request, RECV_DATA_TYPE.PLATE_DATA);
+            }
+        });
+    }
+
     this.RecvError=function(request,datatype,requestData)
     {
         console.log("RecvError: datatype="+ datatype.toString());
@@ -1869,6 +2362,9 @@ function JSStock()
 			case RECV_DATA_TYPE.COMPANY_DATA:
                 mapTagData = this.RecvCompanyData(data, datatype);
                 break;
+            case RECV_DATA_TYPE.PLATE_DATA:
+                mapTagData = this.RecvPlateData(data, datatype);
+                break;
         }
 
         for(var value of mapTagData)
@@ -1878,18 +2374,33 @@ function JSStock()
             this.MapTagCallback.get(value[0])(value[0],value[1],datatype,this);
         }
 
-        var self=this;
-        if (this.IsAutoUpdate)
-        {
-            if (this.Timeout) clearTimeout(this.Timeout);   //清空定时器
-            //周日 周6 不更新， [9：15-3：30]以外的时间不更新
-            var today=new Date();
-            var time=today.getHours()*100+today.getMinutes();
-            if (today.getDay()>0 && today.getDay()<6 && time>=915 && time<1530)
-                this.Timeout=setTimeout(function() {  self.ReqeustData();},this.AutoUpateTimeout);
-        }
+        this.AutoUpdate();
     }
 
+    this.AutoUpdate=function()
+    {
+        if (this.Timeout) clearTimeout(this.Timeout);   //清空定时器
+        if (!this.IsAutoUpdate) return;
+
+        var self=this;
+        var isBeforOpen=false;
+        for(var item of this.MapStock)  //只要有1个股票在盘中 就请求数据
+        {
+            var status=STOCK_MARKET.GetMarketStatus(item[0]);
+            if (status==2) //盘中
+            {
+                this.Timeout=setTimeout( function() {  self.ReqeustData(); },this.AutoUpateTimeout );
+                return;
+            }
+            else if (status==1) //盘前
+            {
+                isBeforOpen=true;
+            }
+        } 
+
+        //盘前
+        if (isBeforOpen) this.Timeout=setTimeout( function() {  self.AutoUpdate(); },this.AutoUpateTimeout );
+    }
 
     this.RecvBaseData=function(data,datatype)
     {
@@ -2246,6 +2757,30 @@ function JSStock()
 
         return mapTagData;
     }
+
+    this.RecvPlateData = function (data, datatype) {
+        var mapTagData = new Map();   //key=界面元素id, value=更新的股票列表
+        for (var i in data.stock) {
+            var item = data.stock[i];
+            var stockData = this.MapStock.get(item.symbol);
+            if (!stockData) continue;
+
+            stockData.SetPlateData(item);
+
+            if (stockData.PlateTagID.size > 0) {
+                for (var id of stockData.PlateTagID) {
+                    if (mapTagData.has(id)) {
+                        mapTagData.get(id).push(stockData.Symbol);
+                    }
+                    else {
+                        mapTagData.set(id, new Array(stockData.Symbol));
+                    }
+                }
+            }
+        }
+
+        return mapTagData;
+    }
     
 }
 
@@ -2267,7 +2802,7 @@ function SearchStock(callback)
     {
         if (this.SearchString==input && this.SearchType==type)
         {
-
+            if (typeof(this.UpdateUICallback)=='function') this.UpdateUICallback(this);
         }
         else
         {
@@ -2389,15 +2924,27 @@ function IStockData()
 
         if (!this.IsAutoUpdate) return;
 
-        //周日 周6 不更新， [9：30-3：30]以外的时间不更新
-        var self = this;
-        let today = new Date();
-        let time = today.getHours() * 100 + today.getMinutes();
-        if (today.getDay() > 0 && today.getDay() < 6 && time >= 930 && time < 1530)
-            this.Timeout = setTimeout(function () {
-                self.RequestData();
-            }, this.AutoUpateTimeout);
-
+        if (this.Timeout) clearTimeout(this.Timeout);   //清空定时器
+        if (!this.IsAutoUpdate) return;
+        
+        var self=this;
+        if (this.Symbol)
+        {
+            var status=STOCK_MARKET.GetMarketStatus(this.Symbol);
+            if (status==2) this.Timeout=setTimeout( function() {  self.RequestData(); },this.AutoUpateTimeout );
+            else if (status==1) this.Timeout=setTimeout( function() {  self.AutoUpdate(); },this.AutoUpateTimeout );
+        }
+        else
+        {
+            //周日 周6 不更新， [9：30-3：30] 以外的时间不更新
+            var self = this;
+            let today = new Date();
+            let time = today.getHours() * 100 + today.getMinutes();
+            if (today.getDay() > 0 && today.getDay() < 6 && time >= 930 && time < 1530)
+                this.Timeout = setTimeout(function () {
+                    self.RequestData();
+                }, this.AutoUpateTimeout);
+        }
     }
 
     this.InvokeUpdateUICallback=function()
@@ -2692,6 +3239,86 @@ function BlockMember(symbol)
     }
 
 }
+
+//板块排名
+function BlockTop() {
+    this.newMethod = IStockData;   //派生
+    this.newMethod();
+    delete this.newMethod;
+
+    this.BlockType = 1; //板块类型
+    this.Count = 20;
+
+    this.OrderField = 'increase';             //排序字段
+    this.Order = -1;                          //排序方向 -1 /1
+    this.Field = ["symbol", "price", "name", "vol", "increase", "indextop",'risefall'];
+
+    this.ApiUrl = g_JSStockResource.Domain + "/API/StockBlockTop";
+
+    this.SetField = function (field) {
+
+    }
+
+    this.ReqeustData = function () {
+        var self = this;
+
+        $.ajax({
+            url: this.ApiUrl,
+            data: {
+                "blocktype": this.BlockType,
+                "start": 0,
+                "end": this.Count,
+                "field": this.Field,
+                "orderfield": this.OrderField,
+                "order": this.Order
+            },
+            type:"post",
+            dataType: 'json',
+            async:true,
+            success: function (data) {
+                self.RecvData(data, RECV_DATA_TYPE.BLOCK_TOP_DATA);
+            },
+            fail: function (request) {
+                self.RecvError(request, RECV_DATA_TYPE.BLOCK_TOP_DATA);
+            }
+        });
+    }
+
+    this.RecvData = function (recvData, dataType) {
+        let data = recvData;
+        //console.log(data);
+
+        this.Data = [];
+        for (let i in data.stock) {
+            let item = data.stock[i];
+            this.Data.push(
+                {
+                    Name: item.name,
+                    Symbol: item.symbol,
+                    Increase: item.increase,
+                    Risefall: item.risefall,
+                    IndexTop: {
+                        Down: item.indextop.down,
+                        Stop: item.indextop.stop,
+                        Up: item.indextop.up,
+                        Unchanged: item.indextop.unchanged,
+                        DownStock: {Name: item.indextop.downstock.name, Symbol: item.indextop.downstock.symbol},
+                        UpStock: {Name: item.indextop.upstock.name, Symbol: item.indextop.upstock.symbol}
+                    }
+                });
+        }
+
+        if (this.UpdateUICallback) this.UpdateUICallback(this);
+
+        this.AutoUpate();
+    }
+
+    this.RecvError = function (request, dataType) {
+
+    }
+
+}
+
 
 
 //获取股票走势图图片路径
@@ -3191,7 +3818,7 @@ function AnalylisPlate()
   this.RecvData = function(recvData)
   {
     this.Data = {};
-    // console.log(recvData.data,"recvData,分析板块")
+    // console.log(recvData.data,"recvData,分析板块:::::")
     var data = recvData;
     if (data.count == 0) return;
     
@@ -3235,6 +3862,180 @@ function AnalylisPlate()
     console.log(request)
   }
 }
+
+var STOCK_MARKET=
+{
+    SH:'.SH',
+    SZ:'.SZ',
+    HK:'.HK',
+    SHFE: '.SHF',        //上期所 (Shanghai Futures Exchange)
+    CFFEX: '.CFE',       //中期所 (China Financial Futures Exchange)
+    DCE: '.DCE',         //大连商品交易所(Dalian Commodity Exchange)
+    CZCE: '.CZC',        //郑州期货交易所
+    USA:'.USA',          //美股
+
+    IsUSA:function(upperSymbol) //是否是美股
+    {
+        if (!upperSymbol) return false;
+        return upperSymbol.indexOf(this.USA) > 0;
+    },
+
+    IsSH: function (upperSymbol)
+    {
+        //需要精确匹配最后3位
+        var pos = upperSymbol.length-this.SH.length;
+        var find = upperSymbol.indexOf(this.SH);
+        return find == pos;
+    },
+
+    IsSZ: function (upperSymbol)
+    {
+        var pos = upperSymbol.length - this.SZ.length;
+        var find = upperSymbol.indexOf(this.SZ);
+        return find == pos;
+    },
+
+    IsHK: function (upperSymbol)
+    {
+        var pos = upperSymbol.length - this.HK.length;
+        var find = upperSymbol.indexOf(this.HK);
+        return find == pos;
+    },
+
+    IsSHFE: function (upperSymbol)
+    {
+        return upperSymbol.indexOf(this.SHFE) > 0;
+    },
+        
+    IsCFFEX: function (upperSymbol) 
+    {
+        return upperSymbol.indexOf(this.CFFEX) > 0;
+    },
+
+    IsDCE: function (upperSymbol) 
+    {
+        return upperSymbol.indexOf(this.DCE) > 0;
+    },
+
+    IsCZCE: function (upperSymbol) 
+    {
+        return upperSymbol.indexOf(this.CZCE) > 0;
+    },
+
+    IsChinaFutures:function(upperSymbol)   //是否是国内期货
+    {
+        return this.IsCFFEX(upperSymbol) || this.IsCZCE(upperSymbol) || this.IsDCE(upperSymbol) || this.IsSHFE(upperSymbol);
+    },
+
+    IsSHSZ:function(upperSymbol)            //是否是沪深的股票
+    {
+        return this.IsSZ(upperSymbol)|| this.IsSH(upperSymbol);
+    },
+
+    IsSHSZFund:function(upperSymbol)        //是否是交易所基金
+    {
+        if (!upperSymbol) return false;
+
+        if (this.IsSH(upperSymbol)) //51XXXX.SH
+        {
+            if (upperSymbol.charAt(0)=='5' && upperSymbol.charAt(1)=='1') return true;
+        }
+        else if (this.IsSZ(upperSymbol)) //15XXXX.sz, 16XXXX.sz, 17XXXX.sz, 18XXXX.sz
+        {
+            if (upperSymbol.charAt(0)=='1' && 
+                (upperSymbol.charAt(1)=='5' || upperSymbol.charAt(1)=='6' || upperSymbol.charAt(1)=='7' || upperSymbol.charAt(1)=='8') ) return true;
+        }
+
+        return false;
+    },
+
+    IsSHSZIndex:function(symbol)     //是否是沪深指数代码
+    {
+        if (!symbol) return false;
+        var upperSymbol=symbol.toUpperCase();
+        if (this.IsSH(upperSymbol))
+        {
+            var temp=upperSymbol.replace('.SH','');
+            if (upperSymbol.charAt(0)=='0' && parseInt(temp)<=3000) return true;
+
+        }
+        else if (this.IsSZ(upperSymbol))
+        {
+            if (upperSymbol.charAt(0)=='3' && upperSymbol.charAt(1)=='9') return true;
+        }
+        else if (upperSymbol.indexOf('.CI')>0)  //自定义指数
+        {
+            return true;
+        }
+
+        return false;
+    },
+
+    IsSHSZStockA:function(symbol) //是否是沪深A股
+    {
+        if (!symbol) return false;
+        var upperSymbol=symbol.toUpperCase();
+        if (this.IsSH(upperSymbol))
+        {
+            var temp=upperSymbol.replace('.SH','');
+            if (upperSymbol.charAt(0)=='6') return true;
+
+        }
+        else if (this.IsSZ(upperSymbol))
+        {
+            if (upperSymbol.charAt(0)=='0')
+            {
+                if (upperSymbol.charAt(1)=='0' && upperSymbol.charAt(1)=='2') return true;  //002 中小板
+                if (upperSymbol.charAt(1)!='7' && upperSymbol.charAt(1)!='8') return true;
+            } 
+        }
+
+        return false;
+    },
+
+    IsSHStockSTAR:function(symbol)   // 是否是科创板 Sci-Tech innovAtion boaRd (STAR Market)
+    {
+        if (!symbol) return false;
+        var upperSymbol=symbol.toUpperCase();
+        if (!this.IsSH(upperSymbol)) return false;
+        if (upperSymbol.charAt(0)=='6' && upperSymbol.charAt(1)=='8' && upperSymbol.charAt(2)=='8')
+            return true;
+        
+        return false;
+    },
+
+    GetMarketStatus:function(symbol)    //获取市场状态 0=闭市 1=盘前 2=盘中 3=盘后
+    {
+        if (!symbol) return 0;
+        var upperSymbol=symbol.toUpperCase();
+        if (this.IsUSA(upperSymbol))
+        {
+            var usaDate=GetLocalTime(-4);
+            day = usaDate.getDay(),
+            time = usaDate.getHours() * 100 + usaDate.getMinutes();
+            if(day == 6 || day== 0) return 0;   //周末
+
+            //9:30 - 16:00 考虑夏令时间时间增加1小时 9:30 - 17:00
+            if (time>1730) return 3;
+            if (time<930) return 1;
+
+            return 2;
+        }
+        else
+        {
+            
+            var nowDate= new Date(),
+            day = nowDate.getDay(),
+            time = nowDate.getHours() * 100 + nowDate.getMinutes();
+            if(day == 6 || day== 0) return 0;   //周末
+
+            //9:30 - 15:40
+            if(time>1540) return 3;
+            if(time<925) return 1;
+            return 2;   
+        }
+    }
+};
 
 
 /*外部导入*/ 

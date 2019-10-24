@@ -1,4 +1,17 @@
 /*
+   Copyright (c) 2018 jones
+ 
+    http://www.apache.org/licenses/LICENSE-2.0
+
+   开源项目 https://github.com/jones2000/HQChart
+ 
+   jones_2000@163.com
+
+   系统指标 (H5版本)
+*/
+
+
+/*
     指标数据脚本 系统内置指标都写在这里
     Name：指标名字
     Description：指标描述信息
@@ -8,6 +21,7 @@
     FloatPrecision: 小数位数 缺省=2
     YSplitScale:  Y固定刻度 [1,8,10]
     YSpecificMaxMin: 固定Y轴最大最小值 { Max: 9, Min: 0, Count: 3 };
+    StringFormat: 1=带单位万/亿 2=原始格式
     Condition: 限制条件 { Symbol:'Index'/'Stock'(只支持指数/股票),Period:[](支持的周期), }
 */
 
@@ -30,6 +44,25 @@ var CONDITION_PERIOD=
     KLINE_60_MINUTE_ID:8
 
 };
+
+//自定义的指标脚本
+function CustomIndexScript()
+{
+    this.DataMap=new Map(); //key=指标id, value=data {ID:, Name：指标名字, Description：指标描述信息 Args:参数 ......}
+
+    this.Get=function(id)
+    {
+        if (!this.DataMap.has(id)) return null;
+        return this.DataMap.get(id);
+    }
+
+    this.Add=function(data)
+    {
+        this.DataMap.set(data.ID, data);
+    }
+}
+
+var g_CustomIndex=new CustomIndexScript();
 
 function JSIndexScript()
 {
@@ -63,6 +96,8 @@ function JSIndexScript()
             ['RAD',this.RAD],['SHT',this.SHT],['ZLJC',this.ZLJC],['ZLMM',this.ZLMM],['SLZT',this.SLZT],
             ['ADVOL',this.ADVOL],['CYC',this.CYC],['CYS',this.CYS],['CYQKL',this.CYQKL],
             ['SCR',this.SCR],['ASR',this.ASR],['SAR',this.SAR],['TJCJL',this.TJCJL],['量比',this.VOLRate],
+            ['平均K线',this.HeikinAshi], 
+            ['EMPTY', this.EMPTY],  //什么都不显示的指标
 
             ['飞龙四式', this.Dragon4_Main],['飞龙四式-附图', this.Dragon4_Fig],
             ['资金分析', this.FundsAnalysis],['融资占比',this.MarginProportion],['负面新闻', this.NewsNegative],
@@ -102,9 +137,19 @@ function JSIndexScript()
         ]);
 }
 
+JSIndexScript.AddIndex=function(aryIndex)  //添加自定义指标
+{
+    for(var i in aryIndex)
+    {
+        g_CustomIndex.Add(aryIndex[i]);
+    }
+}
+
 JSIndexScript.prototype.Get=function(id)
 {
-    //console.log('[JSIndexScript] load index data. count=',DataMap.size);
+    var data=g_CustomIndex.Get(id);
+    if (data) return data;
+
     var func=this.DataMap.get(id);
     if (func) return func();
 
@@ -128,7 +173,7 @@ JSIndexScript.prototype.MA=function()
 {
     let data=
     {
-        Name:'MA', Description:'均线', IsMainIndex:true,
+        Name:'MA', Description:'均线', IsMainIndex:true, StringFormat:2,
         Args:[ { Name:'M1', Value:5}, { Name:'M2', Value:10 }, { Name:'M3', Value:20} ],
         Script: //脚本
 'MA1:MA(CLOSE,M1);\n\
@@ -2444,7 +2489,7 @@ JSIndexScript.prototype.COLOR_SGCJ=function()
 {
     let data=
     {
-        Name: '乌云盖顶', Description: '乌云盖顶', IsMainIndex: true, InstructionType:2,
+        Name: '曙光初现', Description: '曙光初现', IsMainIndex: true, InstructionType:2,
         Script: //脚本
 'VAR1:BACKSET( \n\
 REF(CLOSE,1)/REF(OPEN,1)<0.97 AND \n\
@@ -3225,6 +3270,35 @@ INDEXCLOSE:INDEXC,EXDATA;		//取指数的收盘价 回测的时候计算BATE系�
 }
 
 
+JSIndexScript.prototype.HeikinAshi=function()
+{
+    let data =
+    {
+        Name: '平均K线', Description: 'Heikin-Ashi 平均K线', IsMainIndex: true, KLineType:-1,
+        Args: [],
+        Script: //脚本
+"HCLOSE:(OPEN+HIGH+LOW+CLOSE)/4, NODRAW;\n\
+HOPEN:(REF(OPEN,1)+REF(CLOSE,1))/2,NODRAW;\n\
+HHIGH:MAX(HIGH,MAX(HOPEN,HCLOSE)),NODRAW;\n\
+HLOW:MIN(LOW,MIN(HOPEN,HCLOSE)),NODRAW;\n\
+DRAWKLINE(HHIGH,HOPEN,HLOW,HCLOSE);"
+    }
+
+    return data;
+}
+
+JSIndexScript.prototype.EMPTY = function () 
+{
+    let data =
+    {
+        Name: '', Description: '空指标', IsMainIndex: false,
+        Args: [],
+        Script: //脚本
+            'VAR2:=C;'
+    };
+
+    return data;
+}
 
 
 JSIndexScript.prototype.TEST = function () 

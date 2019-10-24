@@ -1,3 +1,15 @@
+/*
+   Copyright (c) 2018 jones
+ 
+    http://www.apache.org/licenses/LICENSE-2.0
+
+   开源项目 https://github.com/jones2000/HQChart
+ 
+   jones_2000@163.com
+
+   个股指标回测
+*/
+
 
 /*
     指标回测
@@ -149,8 +161,8 @@ function RegressionTest()
             if (this.IndexClose) beta=this.CaclulateBeta(netValue);
         }
 
-        //Profit:收益  StockProfit:标的证券收益 Excess:超额收益
-        var result={ Day:day, Trade:trade, Profit:profit, StockProfit:stockProfit, Excess:profit-stockProfit, NetValue:netValue, MaxDropdown:maxDropdown, Beta:beta };
+        //Profit:收益  StockProfit:标的证券收益 Excess:超额收益(加上BS配对的数据)
+        var result={ Day:day, Trade:trade, Profit:profit, StockProfit:stockProfit, Excess:profit-stockProfit, NetValue:netValue, MaxDropdown:maxDropdown, Beta:beta,BSDataPair:data.BSData};
 
         console.log('[RegressionTest::Calculate] NetCalculateModel, result ',this.NetCalculateModel, result);
         return result;

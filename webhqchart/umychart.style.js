@@ -1,12 +1,26 @@
 /*
+   Copyright (c) 2018 jones
+ 
+    http://www.apache.org/licenses/LICENSE-2.0
+
+   开源项目 https://github.com/jones2000/HQChart
+ 
+   jones_2000@163.com
+
+   配色
+*/
+
+/*
     不同风格行情配置文件
     !!手机上字体大小需要*分辨率比
 */
 
+/* umychart.js 里面已经有了
 function GetDevicePixelRatio()
 {
     return window.devicePixelRatio || 1;
 }
+*/
 
 //黑色风格
 var BLACK_STYLE=
@@ -150,6 +164,16 @@ var BLACK_STYLE=
         BorderColor:'rgb(210,210,210)',     //边框颜色
         TitleColor:'rgb(210,210,210)',       //标题颜色
         TitleFont:13*GetDevicePixelRatio() +'px 微软雅黑'   //字体
+    },
+
+    //走势图 信息地雷
+    MinuteInfo:
+    {
+        TextColor: 'rgb(84,143,255)',
+        Font: 14*GetDevicePixelRatio() +'px 微软雅黑',
+        PointColor:'rgb(38,113,254)',
+        LineColor:'rgb(120,167,255)',
+        TextBGColor:'rgba(255,255,255,1)'
     }
     
 };
