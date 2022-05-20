@@ -138,34 +138,48 @@ function JSIndexController(req,res,next)
         if (!this.GetPostData())
         {
             this.SendResult();
-            return;
+            return next();
         }
         
-        var self=this;
-        var obj=
+        try
         {
-            Name:this.IndexName, ID:this.IndexName, 
-            Args:this.Args,
-            Script:this.Script,
-            ErrorCallback:function(error) { self.ExecuteError(error); },
-            FinishCallback:function(data, jsExectute) { self.ExecuteFinish(data, jsExectute); }
+            var self=this;
+            var obj=
+            {
+                Name:this.IndexName, ID:this.IndexName, 
+                Args:this.Args,
+                Script:this.Script,
+                ErrorCallback:function(error) { self.ExecuteError(error); },
+                FinishCallback:function(data, jsExectute) { self.ExecuteFinish(data, jsExectute); },
+                NetworkFilter:function(data, callback) { self.NetworkFilter(data,callback); }
+            }
+
+            var indexConsole=new HQChart.ScriptIndexConsole(obj);
+
+            var stockObj=
+            {
+                HQDataType:this.HQDataType,
+                Stock: {Symbol:this.Symbol},
+                Request: this.DataCount,
+                Period:this.Period , Right:this.Right
+            };
+
+            if (this.HQDataType===HQChart.HQ_DATA_TYPE.MULTIDAY_MINUTE_ID) stockObj.DayCount=this.DayCount;
+
+            indexConsole.ExecuteScript(stockObj);
+        }
+        catch(error)
+        {
+            this.ErrorMessage='执行异常';
+            this.SendResult();
         }
 
-        var indexConsole=new HQChart.ScriptIndexConsole(obj);
+        return next();
+    }
 
-        var stockObj=
-        {
-            HQDataType:this.HQDataType,
-            Stock: {Symbol:this.Symbol},
-            Request: this.DataCount,
-            Period:this.Period , Right:this.Right
-        };
-
-        if (this.HQDataType===HQChart.HQ_DATA_TYPE.MULTIDAY_MINUTE_ID) stockObj.DayCount=this.DayCount;
-
-        indexConsole.ExecuteScript(stockObj);
-
-        next();
+    this.NetworkFilter=function(data,callback)
+    {
+        console.log("[NetworkFilter] data", data);
     }
 
     //执行脚本返回数据
@@ -264,6 +278,11 @@ JSIndexController.ReloadIndex=function(req, res, next)
     controller.Post();
 }
 
+JSIndexController.SetDomain=function(domain, cacheDomain)
+{
+    HQChart.ScriptIndexConsole.SetDomain (domain, cacheDomain)   //修改API地址
+}
+
 //更新单个指标脚本
 function JSUpateIndexController(req,res,next)
 {
@@ -298,17 +317,18 @@ function JSUpateIndexController(req,res,next)
         if (!this.GetPostData())
         {
             this.SendResult();
-            return;
+            return next();
         }
 
         var indexData=new JSMongoIndex();
         indexData.Load(
             {
+                IndexID:this.IndexID,
                 Success:(data)=> { this.UpdateSuccess(data); }
             }
         );
 
-        next();
+        return next();
     }
 
     this.UpdateSuccess=function(data)
@@ -381,7 +401,17 @@ function JSMongoIndex()
         for(var i in data)
         {
             var item=data[i];
-            var indexItem={Name:item.name, Args:item.args, Script:item.script, ID:item.id, IsMainIndex:false};
+            var indexItem={Name:item.name, Args:null, Script:item.script, ID:item.id, IsMainIndex:false};
+            if (item.args && item.args.length>0)
+            {
+                indexItem.Args=[];
+                for(var j in item.args)
+                {
+                    var argItem=item.args[j];
+                    indexItem.Args.push({Name:argItem.name, Value:argItem.value});
+                }
+            }
+
             if (item.ismainindex==true) indexItem.IsMainIndex=true;
             this.Data.push(indexItem);
         }
