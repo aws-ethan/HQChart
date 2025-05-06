@@ -1,3 +1,16 @@
+/*
+    copyright (c) 2018 jones
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    开源项目 https://github.com/jones2000/HQChart
+
+    jones_2000@163.com
+
+    画布节点元素
+*/
+
+
 //日志
 import { JSConsole } from "./umychart.console.wechat.js"
 import { JSCommonUniApp } from './umychart.uniapp.canvas.helper.js'
@@ -8,14 +21,38 @@ function JSCanvasElement()
     this.Width;
     this.ID;
     this.WebGLCanvas;
-    this.IsUniApp=false;
+    this.IsUniApp=false;    //uniapp app程序
+    this.IsUniAppX=false;
+    this.IsDingTalk=false;  //钉钉小程序
+    this.IsDouYin=false;    //抖音小程序
     this.CanvasNode=null;
     this.ComponentObject=null;  //在自定义组件下，当前组件实例的this，表示在这个自定义组件下查找拥有 canvas-id 的 canvas ，如果省略则不在任何自定义组件内查找
+    this.PixelRatio=null;
 
     //获取画布
     this.GetContext = function () 
-	  {
+	{
         var canvas;
+        if (this.IsDingTalk)
+        {
+            canvas = dd.createCanvasContext(this.ID);
+            if (this.PixelRatio==null) this.PixelRatio=dd.getSystemInfoSync().pixelRatio;
+            canvas.restore();
+            canvas.save();
+            canvas.scale(this.PixelRatio,this.PixelRatio);
+            JSConsole.Chart.Log('[JSCanvasElement::GetContext] measureText() => JSUniAppCanvasHelper.MeasureText()');
+            JSCommonUniApp.JSUniAppCanvasHelper.GetCanvasFont=function(canvas)
+            {
+                return canvas.state.font;
+            }
+            canvas.measureText = function (text) //uniapp 计算宽度需要自己计算
+            {
+                var width = JSCommonUniApp.JSUniAppCanvasHelper.MeasureText(text, canvas);
+                return { width: width };
+            }
+            return canvas;
+        }
+
         if (this.CanvasNode && this.CanvasNode.node) 
         {
             const width = this.CanvasNode.width;
@@ -27,6 +64,7 @@ function JSCanvasElement()
             JSConsole.Chart.Log("[JSCanvasElement::GetContext] create by getContext('2d')");
             canvas = node.getContext('2d');
             const dpr = wx.getSystemInfoSync().pixelRatio;
+            this.PixelRatio=dpr;
             node.width = width * dpr;
             node.height = height * dpr;
             canvas.restore();
@@ -59,6 +97,18 @@ function JSCanvasElement()
             }
         }
 
+        if (this.IsUniAppX)
+        {
+            var element = uni.getElementById(this.ID);
+            canvas = element.getContext("2d");
+
+            const dpr = uni.getSystemInfoSync().pixelRatio;
+            element.width = element.offsetWidth * dpr;
+            element.height = element.offsetHeight * dpr;
+            canvas.scale(dpr, dpr);
+            canvas.draw = () => { };
+        }
+
         return canvas;
     }
 
@@ -75,6 +125,12 @@ function JSCanvasElement()
 
 
 //导出统一使用JSCommon命名空间名
+export
+{
+    JSCanvasElement
+};
+
+/*
 module.exports =
 {
     JSCommonElement:
@@ -85,3 +141,4 @@ module.exports =
     //单个类导出
     JSCommonElement_JSCanvasElement: JSCanvasElement,
 };
+*/

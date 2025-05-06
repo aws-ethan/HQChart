@@ -11,8 +11,13 @@
 HQChart是第1个基于国内传统PC股票客户端软件(C++)移植到js/py平台的一个项目, 包含**K线图图形库**及**麦语法(分析家语法)指标执行器**.  <br>
 **支持平台**:js, vue2.0, vue3.0, uniapp,小程序 <br>
 **支持品种**:支持股票，期货， 数字货币，外汇等和K线相关的品种。<br>
-**麦语法指标计算引擎**(分析家语法)指标执行器支持js, nodejs, py, c#，c++. <br>
+**麦语法指标计算引擎**(分析家语法)指标执行器支持js, nodejs, py, c#，c++. 支持前端worker线程计算指标<br>
 
+# 交流
+ 前端技术交流群:719525615  
+ 有问题可以直接发issue.  
+
+**教程列表和demo效果图在下面,下拉页面就可以看到!!!!!!!!!!!!**    
 
 源码地址:[https://github.com/jones2000/HQChart](https://github.com/jones2000/HQChart)<br>
 镜像地址:[https://gitee.com/jones2000/HQChart](https://gitee.com/jones2000/HQChart)<br>
@@ -30,10 +35,8 @@ uniapp 版本:
 
 如果你觉得我们的行情模块对你有帮助， 请给我们点下star. (●ˇ∀ˇ●) <br>
 
-py版本的麦语法指标计算引擎，已单独迁移到[https://github.com/jones2000/hqchartPy2](https://github.com/jones2000/hqchartPy2),
-支持windows,和linux. 这个版本是用c++开发的，通过cpython来对接py，能高效的完成指标执行. 可以应用于回测, 选股等批量指标计算中。社区版c++开源.<br>
-
-**教程列表和demo效果图在下面,下拉页面就可以看到!!!!!!!!!!!!**
+麦语法指标计算引擎，[https://github.com/jones2000/hqchartPy2/tree/master/HQChartPy2.Free](https://github.com/jones2000/hqchartPy2/tree/master/HQChartPy2.Free),
+支持windows,和linux. 这个版本是用c++开发的，通过cpython来对接py，能高效的完成指标执行. 可以应用于回测, 选股等批量指标计算中.
 
 
 # 目录结构
@@ -65,12 +68,15 @@ VUE 例子:[demo-vue.md](/教程/demo-vue.md) <br>
 React 例子:[demo-react.md](/教程/demo-react.md) <br>
 
 # 本地调试
-内置测试数据不支持跨域，如果要在本地chrome调试代码，参看教程[解决Chrome本地调试跨域](https://jones2000.blog.csdn.net/article/details/120008624). VUE项目本地调试请使用127.0.0.1:8080站点调试
+由于安全原因, 内置测试数据接口已经停止了。
+如果需要数据对接可以参考第3放数据对接案例. [https://github.com/jones2000/HQChart-Super](https://github.com/jones2000/HQChart-Super)  
+
+~~内置测试数据不支持跨域，如果要在本地chrome调试代码，参看教程[解决Chrome本地调试跨域](https://jones2000.blog.csdn.net/article/details/120008624). VUE项目本地调试请使用127.0.0.1:8080站点调试~~
 
 # 声明
-  本项目只提供行情图形库及麦语法脚本执行器.<br>
-  页面中所有的行情数据都来自互联网或测试假数据, 不能确保数据的正确性, 仅供开发调试使用. 任何行情数据问题都与本项目无关. 请自行去交易所购买正版行情。
-
+  本项目只提供行情图形库及麦语法脚本执行器.    
+  页面中所有的行情数据都来自互联网或测试假数据, 不能确保数据的正确性, 仅供开发调试使用. 任何行情数据问题都与本项目无关. 请自行去交易所购买正版行情。    
+ 
 
 # HQChart 3.0
 * 分网页版本 及 微信小程序版本 <br>
@@ -93,11 +99,11 @@ React 例子:[demo-react.md](/教程/demo-react.md) <br>
 * 支持常用指标指标(目前以录入系统指标80多个),支持自定义通达信语法脚本指标<br>
     均线，BOLL，MACD，KDJ，VOL，RSI，BRAR，WR，BIAS，OBV，DMI，CR，PSY，CCI，
     DMA，TRIX，VR，EMV，ROC，MIM，FSL，CYR，MASS，WAD，CHO ..... <br>
-* 支持画图工具,支持保存到本地或保存在内存中(小程序不支持)<br>
+* 支持画图工具,支持保存到本地或保存在内存中<br>
      线段，射线，矩形，圆弧线,水平线,趋势线,平行线,平行通道,价格通道线,文本,江恩角度线,阻速线,黄金分割,百分比线,波段线,三角形,对称角度,斐波那契周期线,平行四边形,圆, iconfont图片 <br>
 * 支持区间统计， 区间形态匹配 (微信小程序版本不支持) <br>
 * 数据鼠标左右拖拽移动, 键盘移动十字光标移动，键盘缩放 <br>
-* 支持麦语法 [内置系统函数说明](https://opensourcecdn.zealink.com/cache/webcache/hqfunctionhelp/index.html)
+* 支持麦语法
 * 支持通达信语法指标
 * 支持五彩K线(目前录入系统五彩K线30多个), 支持自定义通达信语法脚本的五彩K线
 * 支持专家系统指标
@@ -118,10 +124,76 @@ React 例子:[demo-react.md](/教程/demo-react.md) <br>
 ![K线图](/小程序行情模块用例/image/hqchart_kline3.png)
 * 支持K线面积图
 ![K线图](/小程序行情模块用例/image/hqchart_kline_area.png)
-* 支持深度图
-![深度图](/小程序行情模块用例/image/depth_demo.png)
+* 支持深度图    
+![深度图](/小程序行情模块用例/image/depth_demo.png)    
 * 支持ox图
 ![ox图](/小程序行情模块用例/image/hqchart_ox.png)
+* 支持指标图形拖拽
+![指标图形拖拽](/小程序行情模块用例/image/hqchart_dragindechart.gif)
+* Y轴拖拽缩放
+![Y轴缩放](/小程序行情模块用例/image/hqchart_ydrag.gif)  
+* 指标tab按钮
+![指标tab按钮](/小程序行情模块用例/image/frame_button.gif)  
+
+* 订单流  
+![订单流](/小程序行情模块用例/image/hqchart_ordeflow.png)  
+[https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_orderflow.html](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_orderflow.html)  
+
+* 订单流2   
+![订单流样式2](/小程序行情模块用例/image/hqchart_ordeflow2.png)  
+[https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_orderflow_v2(type=7).html](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_orderflow_v2(type=7).html)    
+
+* 订单流3   
+![订单流样式3](/小程序行情模块用例/image/hqchart_ordeflow3.png)  
+[https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_orderflow_v2(type=8).html](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_orderflow_v2(type=8).html)    
+
+* 订单流4   
+![订单流样式4](/小程序行情模块用例/image/hqchart_ordeflow4.png)    
+[https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_orderflow_v2(type=17).html](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_orderflow_v2(type=17).html) 
+
+* 订单流5   
+![订单流样式4](/小程序行情模块用例/image/hqchart_ordeflow5.png)    
+[https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_orderflow_v2(type=17).html](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_orderflow_v2(type=18).html) 
+
+* 固定范围成交量分布图
+![成交量分布图](/小程序行情模块用例/image/hqchart_volprofile.gif)
+* 可视范围成交量分布图
+![成交量分布图](/小程序行情模块用例/image/hqchart_vol2.gif)
+* 彩色K线柱子
+![彩色K线柱子](/小程序行情模块用例/image/kline_color.gif)  
+[https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_color_kline_v2.html](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_color_kline_v2.html)   
+* 指标窗口最大，最小化
+![指标窗口最大，最小化](/小程序行情模块用例/image/index_title.gif)
+* 区间选择支持拖拽移动
+![区间选择支持拖拽移动](/小程序行情模块用例/image/kline_selectrect.gif)
+* 散点图指标
+![散点图指标](/小程序行情模块用例/image/kline_SCATTERPLOT.gif)
+* renko 砖形图 
+![砖形图](/小程序行情模块用例/image/hqchart_renko.png)
+* line break
+![line break](/小程序行情模块用例/image/hqchart_linebreak.png)
+* OrderBook Heatmap
+![heatmap](/小程序行情模块用例/image/hqchart_heatmap.png)
+* 数据导出
+![exportdata](/小程序行情模块用例/image/hqchart_exportdata.gif)  
+* 横向滚动条
+![scroll bar](/小程序行情模块用例/image/hqchart_scrollbar.gif)  
+* 美国线(自动调整柱子宽度)
+![bar](/小程序行情模块用例/image/kline_usabar.gif)  
+* HLC Area
+![HLC Area](/小程序行情模块用例/image/kline_HLCArea.png)   
+* 未回补缺口显示
+![未回补缺口显示](/小程序行情模块用例/image/hqchart_kline_pricegap.gif)   
+* 小程序画图工具
+![小程序画图工具](/小程序行情模块用例/image/wechat_drawtool.gif)  
+![小程序画图工具](/小程序行情模块用例/image/drawtool_price_line.gif)  
+* 背景分割  
+![背景分割](/小程序行情模块用例/image/kline_splitbg.png)  
+* 筹码图  
+![筹码图](/小程序行情模块用例/image/phone_chip.gif)  
+![筹码图](/小程序行情模块用例/image/phone_chip2.gif)   
+* 多股同列 十字光标联动
+![多股同列](/小程序行情模块用例/image/Multi_Kline.gif)  
 
 # 2. 走势图
 * 支持指标 <br>
@@ -134,8 +206,15 @@ React 例子:[demo-react.md](/教程/demo-react.md) <br>
 * 支持指数领先指标(2019-7-15  新加功能)  <br>
 ![领先指标](/小程序行情模块用例/image/hqchart_kline_lock3.png)
 * 支持信息标识 <br>
-![信息标识](/小程序行情模块用例/image/hqchart_minute_info.png)
+![信息标识](/小程序行情模块用例/image/hqchart_minute_info.png)   
+[https://jones2000.github.io/HQChart/webhqchart.demo/samples/minute_mines.html](https://jones2000.github.io/HQChart/webhqchart.demo/samples/minute_mines.html)   
 * 支持涨停坐标 <br>
+* 支持美股盘前,盘中,盘后,全部全部行情展示   
+![美股](/小程序行情模块用例/image/minute_usa.gif)
+* 多股同列 十字光标联动
+![多股同列](/小程序行情模块用例/image/Multi_minute.gif)  
+* 预测线
+![预测线](/小程序行情模块用例/image/minute_PredictLine.png)  
 
 # 3. 其他图形
 * 成交明细表, 支持键盘,滚轴翻页<br>
@@ -147,32 +226,105 @@ React 例子:[demo-react.md](/教程/demo-react.md) <br>
 2. 支持固定列, 键盘操作: PageUP/PageDown 翻页, Up/Down 移动当前选中股票, Left/Right 移动列, 滚轴上下翻页.<br>
 3. 支持Tab页切换板块，横向滚动轴<br>
 4. 支持配置列本地排序或远程排序<br>
+5. 支持走势图
+6. 支持单K线柱
+7. 拖拽调整表头顺序和列宽度
+8. 支持K线和分时图浮窗
 ![报价列表](/小程序行情模块用例/image/hqchart_report.gif)<br>
 ![报价列表](/小程序行情模块用例/image/hqchart_report2.gif)<br>
+![报价列表](/小程序行情模块用例/image/hqchart_report_closeline.png)<br>
+![报价列表](/小程序行情模块用例/image/hqchart_report_kbar.png)<br>
+![报价列表](/小程序行情模块用例/image/hqchart_report_2.gif)<br>
+![报价列表](/小程序行情模块用例/image/report_chart.gif)<br>
+![报价列表](/小程序行情模块用例/image/report_selfstock.gif)<br>
+
+* 键盘精灵<br>
+![键盘精灵](/小程序行情模块用例/image/sendsymbol_demo.gif)<br>
+* T型报价   
+![T型报价](/小程序行情模块用例/image/TReport_demo.gif)  
+* 大数据表格
+![大数据表格](/小程序行情模块用例/image/report_bigdata_demo.gif)  
+![大宗交易](/小程序行情模块用例/image/report_block_trade_demo.png)   
 
 
 
-# 3. 网页demo  <br>
-* [K线图](https://opensource2.zealink.com/hqweb/demo/phone7.html)  <br>
-* [走势图](https://opensource2.zealink.com/hqweb/demo/phone8.html)  <br>
-* [走势图手机页面](https://opensource2.zealink.com/hqweb/demo/phone2.html)  <br>
-* [K线图手机页面](https://opensource2.zealink.com/hqweb/demo/phone.html)  <br>
-* [横版走势图手机页面](https://opensource2.zealink.com/hqweb/demo/phone10.html)  <br>
-* [横版K线图手机页面](https://opensource2.zealink.com/hqweb/demo/phone9.html)  <br>
-* [多日走势图](https://opensource2.zealink.com/hqweb/demo/phone15.html) <br>
-* [个股筹码图](https://opensource2.zealink.com/hqweb/demo/phone18.html) <br>
-* [指标回测(手机版)](https://opensource2.zealink.com/hqweb/operatebsh5/index.html?symbol=000001.sz) <br>
-* [手机K线训练](https://opensource2.zealink.com/hqweb/demo/demo_ktrain.html) <br>
-* [手机K线训练横屏](https://opensource2.zealink.com/hqweb/demo/demo_ktrain2.html) <br>
-* [弹幕功能](https://opensource2.zealink.com/hqweb/demo/phone21.html) <br>
-* [多指标叠加](https://opensource2.zealink.com/hqweb/demo/phone22.html) <br>
-* [截面数据(财务数据)计算器](https://opensource2.zealink.com/hqweb/demo/sectiondatatest.html) <br>
-* [走势图-大盘异动](https://opensource2.zealink.com/hqweb/demo/phone23.html) <br>
-* [分笔K线图](https://opensource2.zealink.com/hqweb/demo/phone24.html) <br>
-* 小程序demo 请搜索 ‘知临信息软件及数据服务介绍’ 或微信扫描 ![二维码](/小程序行情模块用例/image/wechatrcode.jpg)
+
+# 3. 网页demo  
+## 公式编辑器
+* [仿通达信公式编辑器](https://jones2000.github.io/HQChart/webhqchart.demo/samples/kline_index_edit.html)  
+* [仿通达信公式编辑器-分时图](https://jones2000.github.io/HQChart/webhqchart.demo/samples/minute_index_edit.html)  
+
+## K线图
+* [K线图](https://jones2000.github.io/HQChart/webhqchart.demo/samples/chart_kline.html)   
+* [K线图手机页面](https://jones2000.github.io/HQChart/webhqchart.demo/samples/chart_kline_phone.html)   
+* [K线图手机横屏页面](https://jones2000.github.io/HQChart/webhqchart.demo/samples/chart_kline_phone_hScreen.html)    
+* [K线1分钟K线更新速度测试](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_updata_speed.html)  
+* [K线图滚动条](https://jones2000.github.io/HQChart/webhqchart.demo/samples/kline_scrrollbar.html)    
+* [毫秒收盘价K线图](https://jones2000.github.io/HQChart/webhqchart.demo/samples/msecond_kline.html)   
+* [毫秒收盘价K线图滚动条模式](https://jones2000.github.io/HQChart/webhqchart.demo/samples/msecond_kline_scrrollbar.html)   
+* [K线图沙盘推演](https://jones2000.github.io/HQChart/webhqchart.demo/samples/kline_sandtable.html)  
+* [自定义彩色K线图](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_color_kline_v2.html)   
+* [分钟K线拖动下载历史数据页面](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_DragDownload.html)  
+* [日K线拖动下载历史数据页面](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_DragDownload_day.html)  
+* [指标模板示例](https://jones2000.github.io/HQChart/webhqchart.demo/samples/chart_kline_template_index.html) 
+* [自定义K线指标标题栏](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_indextitle.html)  
+### 后台指标示例 
+* [K线对接后台指标(DRAWBAND)示例](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_DRAWBAND.html)  
+* [K线对接后台指标(MULTI_LINE)示例](https://jones2000.github.io/HQChart/webhqchart.demo/samples/kline_MULTI_LINE_index.html)  
+* [K线对接后台指标(MULTI_SVGICON)示例](https://jones2000.github.io/HQChart/webhqchart.demo/samples/kline_MULTI_SVGICON.html)  
+* [K线对接后台指标(MULTI_TEXT)示例](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_MULTI_TEXT.html)  
+* [K线对接后台指标(MULTI_HTMLDOM)示例](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_MULTI_HTMLDOM.html)  
+
+
+## 订单流
+* [订单流样式1](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_orderflow.html)    
+* [订单流样式2](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_orderflow_v2(type=7).html)    
+* [订单流样式3](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_orderflow_v2(type=8).html)    
+* [订单流样式4](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_orderflow_v2(type=17).html)    
+
+## 走势图
+* [走势图](https://jones2000.github.io/HQChart/webhqchart.demo/samples/chart_minute.html)   
+* [走势图手机页面](https://jones2000.github.io/HQChart/webhqchart.demo/samples/chart_minute_phone.html)   
+* [走势图手机横屏页面](https://jones2000.github.io/HQChart/webhqchart.demo/samples/chart_minute_phone_hScreen.html)   
+* [走势图-异动信息标示](https://jones2000.github.io/HQChart/webhqchart.demo/samples/minute_mines.html)  
+* [指标模板示例](https://jones2000.github.io/HQChart/webhqchart.demo/samples/chart_minute_template_index.html)  
+
+## K线训练
+* [K线训练手机](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_ktrain.html)    
+* [K线训练手机横屏](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_ktrain2.html)    
+
+## 分笔
+* [分笔列表](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_deallist.html)   
+* [分笔列表-小窗口模式](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_deallist_small.html)   
+
+
+## 画图工具
+* [K线图画图工具](https://jones2000.github.io/HQChart/webhqchart.demo/samples/kline_drawtool.html)   
+* [K线图画图工具-横屏](https://jones2000.github.io/HQChart/webhqchart.demo/samples/kline_drawtool.hScreen.html)   
+
+
+## 指标计算
+* [前端工作线程批量计算指标](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_workerthread_sina.html)   
+
+## 键盘精灵
+* [键盘精灵](https://jones2000.github.io/HQChart/webhqchart.demo/samples/keyboard_demo.html)  
+
+## T型报价
+* [T型报价](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_TReport.html)  
+
+## 报价列表
+* [报价列表](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_report.html)  
+* [大宗交易列表](https://jones2000.github.io/HQChart/webhqchart.demo/samples/demo_report_block_trade.html)  
+
 
 
 # 4.使用教程
+## 画图工具列表
+[HQChart支持的画图工具列表](https://jones2000.blog.csdn.net/article/details/133781956)  
+## 麦语法函数帮助文档
+[HQChart麦语法内置函数帮助文档](https://jones2000.blog.csdn.net/article/details/129125330)   
+## HQChart常用快捷键
+[HQChart常用快捷键](https://blog.csdn.net/jones2000/article/details/146417859)  
 ## H5教程
 1. [HQChart使用教程1-如何快速创建一个K线图页面](https://blog.csdn.net/jones2000/article/details/90272733) <br>
 2. [HQChart使用教程2-如何把自定义指标显示在K线图页面](https://blog.csdn.net/jones2000/article/details/90273684) <br>
@@ -211,15 +363,15 @@ React 例子:[demo-react.md](/教程/demo-react.md) <br>
 37. [HQChart使用教程43-日K线设置拖拽自动下载历史数据](https://blog.csdn.net/jones2000/article/details/102511317) <br>
 38. [HQChart使用教程45-如何动态修改指标参数](https://blog.csdn.net/jones2000/article/details/102594672) <br>
 39. [HQChart使用教程46-分钟周期数据计算外部接口](https://blog.csdn.net/jones2000/article/details/102628045) <br>
-40. [HQChart使用教程47-如何自定义右键菜单](https://blog.csdn.net/jones2000/article/details/102720671) <br>
+40. ~~[HQChart使用教程47-如何自定义右键菜单](https://blog.csdn.net/jones2000/article/details/102720671)~~  
 41. [HQChart使用教程48-如何自定义X轴刻度](https://blog.csdn.net/jones2000/article/details/102741428) <br>
 42. [HQChart使用教程49-指标配置项说明](https://blog.csdn.net/jones2000/article/details/102928907) <br>
 43. [HQChart使用教程50-Y轴自定义刻度设置说明](https://blog.csdn.net/jones2000/article/details/103174483) <br>
-44. [HQChart使用教程51-指标切换按钮事件说明-h5版本](https://blog.csdn.net/jones2000/article/details/103187576) <br>
+44. [HQChart使用教程51-指标切换按钮事件说明](https://blog.csdn.net/jones2000/article/details/103187576) <br>
 45. [HQChart使用教程52-自定义手机端K线图Tooltip](https://blog.csdn.net/jones2000/article/details/103820718) <br>
 46. [HQChart使用教程53-log日志输出控制](https://blog.csdn.net/jones2000/article/details/104122774) <br>
 47. [HQChart使用教程54-K线缩放控制按钮接口说明](https://blog.csdn.net/jones2000/article/details/104346016) <br>
-48. [HQChart使用教程55-自定义PC端K线图Tooltip](https://blog.csdn.net/jones2000/article/details/104443471) <br>
+48. ~~[HQChart使用教程55-自定义PC端K线图Tooltip](https://blog.csdn.net/jones2000/article/details/104443471)~~    
 49. [HQChart使用教程56-内置品种对应后缀列表说明](https://blog.csdn.net/jones2000/article/details/104457569) <br>
 50. [HQChart使用教程57-如何调整K线的柱子缩放大小](https://blog.csdn.net/jones2000/article/details/104817724)<br>
 51. [HQChart使用教程58-如何在K线右侧绘制面积图(如深度图)](https://blog.csdn.net/jones2000/article/details/105026997)<br>
@@ -240,7 +392,7 @@ React 例子:[demo-react.md](/教程/demo-react.md) <br>
 66. [HQChart使用教程74-使用快速创建数字币深度图](https://blog.csdn.net/jones2000/article/details/115322752)<br>
 67. [HQChart使用教程75-K线图鼠标单击事件接口](https://blog.csdn.net/jones2000/article/details/115707759)<br>
 68. [HQChart使用教程76-K线图手势事件接口](https://blog.csdn.net/jones2000/article/details/115862159)<br>
-69. [HQChart使用教程77-Y轴刻度文字创建事件回调](https://blog.csdn.net/jones2000/article/details/116376898)<br>
+69. [HQChart使用教程77-Y,X轴刻度文字创建事件回调](https://blog.csdn.net/jones2000/article/details/116376898)<br>
 70. [HQChart使用教程78-分时图集合竞价](https://blog.csdn.net/jones2000/article/details/116523681)<br>
 71. [HQChart使用教程79-异常处理接口](https://blog.csdn.net/jones2000/article/details/117524401)<br>
 72. [HQChart使用教程80-自定义指标标题信息](https://blog.csdn.net/jones2000/article/details/117803420)<br>
@@ -257,11 +409,26 @@ React 例子:[demo-react.md](/教程/demo-react.md) <br>
 83. [HQChart使用教程91-如何在app中使用DRAWICON绘制图片](https://jones2000.blog.csdn.net/article/details/124140916)<br>
 84. [HQChart使用教程92-如何创建分笔明细表](https://blog.csdn.net/jones2000/article/details/124360747)<br>
 85. [HQChart使用教程94-如何创建报价列表](https://blog.csdn.net/jones2000/article/details/124544643)<br>
+86. [HQChart使用教程96-指标图形双击](https://blog.csdn.net/jones2000/article/details/125735141)<br>
+87. [HQChart使用教程97-K线X轴滚动条](https://jones2000.blog.csdn.net/article/details/134133670)   
+88. [HQChart使用教程98-右键菜单2.0使用介绍](https://blog.csdn.net/jones2000/article/details/138841350)   
+89. [HQChart使用教程99-K线窗口设置上下间距](https://jones2000.blog.csdn.net/article/details/139273770)   
+90. [HQChart使用教程100-自定义Y轴分段背景色](https://jones2000.blog.csdn.net/article/details/139498872)   
+91. [HQChart使用教程101-创建内置键盘精灵](https://jones2000.blog.csdn.net/article/details/141336689)   
+92. [HQChart使用教程104-成交量单位统一管理说明](https://jones2000.blog.csdn.net/article/details/143783456)    
 
-## 小程序教程
-1. [HQChart小程序教程1-如何快速的创建一个K线图](https://developers.weixin.qq.com/community/develop/article/doc/0006c451ac81589915b89d1c55bc13) <br>
-2. [HQChart小程序教程2-如何使用新版2D画布创建一个K线图](https://blog.csdn.net/jones2000/article/details/105632095)<br>
-3. [HQChart小程序教程3-新版2D单画布如何切换K线图和分时图](https://blog.csdn.net/jones2000/article/details/108378355)<br>
+## 插件内置对话框2.0设置
+1. [HQChart使用教程102-内置对话框设置及说明](https://jones2000.blog.csdn.net/article/details/143610229)   
+2. [HQChart使用教程103-内置对话框[2.0]设置1-K线tooltip显示自定义字段](https://jones2000.blog.csdn.net/article/details/143702480)     
+
+##  微信小程序教程
+1. [HQChart小程序教程1-如何快速的创建一个K线图](https://developers.weixin.qq.com/community/develop/article/doc/0006c451ac81589915b89d1c55bc13)   
+2. [HQChart小程序教程2-如何使用新版2D画布创建一个K线图](https://blog.csdn.net/jones2000/article/details/105632095)   
+3. [HQChart小程序教程3-新版2D单画布如何切换K线图和分时图](https://blog.csdn.net/jones2000/article/details/108378355)   
+4. [HQChart小程序教程4-动态控制手势滚动页面](https://jones2000.blog.csdn.net/article/details/139497129)    
+
+## 钉钉小程序
+1. [HQChart钉钉小程序教程1-创建K线图](https://blog.csdn.net/jones2000/article/details/125226287)<br>
 
 ## uni-app教程
 1. [HQChart使用教程79-uniapp中hqchart内置组件使用教程](https://blog.csdn.net/jones2000/article/details/116592718)<br>
@@ -273,6 +440,7 @@ React 例子:[demo-react.md](/教程/demo-react.md) <br>
 7. [HQChart使用教程60-解决uniapp-app页面隐藏后在显示白屏的问题](https://blog.csdn.net/jones2000/article/details/105484202) <br>
 8. [HQChart使用教程63-uniapp使用renderjs+hqchart(h5)](https://blog.csdn.net/jones2000/article/details/106933985)<br>
 9. [HQChart实战教程40-如何制作hqchart组件(uniapp版本)](https://blog.csdn.net/jones2000/article/details/116034602)<br>
+10. [HQChart使用教程100-uniapp如何在vue3运行微信小程序](https://jones2000.blog.csdn.net/article/details/139309202)    
 
 ## 第3方数据前端接入教程(走势图)
 1. [HQChart使用教程29-走势图如何对接第3方数据1](https://blog.csdn.net/jones2000/article/details/100132357) <br>
@@ -320,6 +488,15 @@ React 例子:[demo-react.md](/教程/demo-react.md) <br>
 32. [HQChart使用教程30-K线图如何对接第3方数据32-订单流](https://jones2000.blog.csdn.net/article/details/122888661)<br>
 33. [HQChart使用教程30-K线图如何对接第3方数据33-日线叠加品种拖拽下载历史数据](https://blog.csdn.net/jones2000/article/details/123211234)<br>
 34. [HQChart使用教程30-K线图如何对接第3方数据34-分钟K线叠加品种拖拽下载历史数据](https://blog.csdn.net/jones2000/article/details/123211941)<br>
+35. [HQChart使用教程30-K线图如何对接第3方数据35-固定范围成交量分布图数据](https://blog.csdn.net/jones2000/article/details/125020448)  
+36. [HQChart使用教程30-K线图如何对接第3方数据36--散点图](https://jones2000.blog.csdn.net/article/details/126944289)  
+37. [HQChart使用教程30-K线图如何对接第3方数据37-如何绘制圆点](https://jones2000.blog.csdn.net/article/details/131244845)    
+38. [HQChart使用教程30-K线图如何对接第3方数据38-通达信指标K线数据](https://jones2000.blog.csdn.net/article/details/131439180)  
+39. [HQChart使用教程30-K线图如何对接第3方数据39-缩放下载K线数据历史数据](https://blog.csdn.net/jones2000/article/details/132355466)  
+40. [HQChart使用教程30-K线图如何对接第3方数据40-日K叠加股票增量更新](https://jones2000.blog.csdn.net/article/details/139997350)    
+41. [HQChart使用教程30-K线图如何对接第3方数据41-分钟K线叠加股票增量更新](https://jones2000.blog.csdn.net/article/details/139997565)   
+42. [HQChart使用教程30-K线图如何对接第3方数据42-DRAWTEXTREL,DRAWTEXTABS数据结构](https://blog.csdn.net/jones2000/article/details/144444372)   
+
 
 ## 第3方数据前端接入教程(分笔明细)
 1. [HQChart使用教程93-分笔明细表对接第3方数据1-全量分笔明细数据](https://blog.csdn.net/jones2000/article/details/124362666)<br>
@@ -345,18 +522,20 @@ React 例子:[demo-react.md](/教程/demo-react.md) <br>
 11. [HQChart实战教程17-K线沙盘推演](https://blog.csdn.net/jones2000/article/details/106776837) <br>
 12. [HQChart实战教程18-多股同列](https://blog.csdn.net/jones2000/article/details/107193410)<br>
 13. [HQChart实战教程45-自定义指标窗口背景](https://jones2000.blog.csdn.net/article/details/119886468)<br>
+13. [HQChart实战教程66-动态调整HQChart布局大小](https://jones2000.blog.csdn.net/article/details/133800739)  
+14. [HQChart实战教程67-worker批量计算股票指标](https://jones2000.blog.csdn.net/article/details/134163955)    
+15. [HQChart实战教程71-K线图附图双坐标配置](https://blog.csdn.net/jones2000/article/details/137610265)  
+16. [HQChart实战教程73-仿tradingview指标MACD](https://blog.csdn.net/jones2000/article/details/139747247)    
 
-## 火币对接完整教程（付费文章）
-1. [HQChart实战教程10-全ws数据对接HQChart(数字货币对接实战)](https://blog.csdn.net/jones2000/article/details/105698038) <br>
-2. [HQChart实战教程11-火币网ws数据对接](https://blog.csdn.net/jones2000/article/details/105721190) <br>
-3. [HQChart实战教程12-火币网ws数据对接分时图](https://blog.csdn.net/jones2000/article/details/105756659) <br>
-4. [HQChart实战教程13-火币网ws数据对接K线（uniapp)](https://blog.csdn.net/jones2000/article/details/105804461)<br>
-5. [HQChart实战教程15-火币网ws数据对接拖拽下载历史K线图](https://blog.csdn.net/jones2000/article/details/106205584)<br>
-6. [HQChart实战教程16-K线图风格配色篇-仿火币网H5配色](https://blog.csdn.net/jones2000/article/details/106226272)<br>
-7. [HQChart实战教程47-火币网ws数据对接深度图](https://jones2000.blog.csdn.net/article/details/120950486)<br>
+## 付费教程
+1. [HQChart对接火币完整教程](https://jones2000.github.io/HQChart/document/huobi_demo.html)   
+2. [HQChart对接欧易完整教程](https://jones2000.github.io/HQChart/document/okx_demo.html)   
+
+
 
 ## 源码收费
-1. [HQChart实战教程36-数字货币币安对接-uniapp版本](https://blog.csdn.net/jones2000/article/details/114468807)<br>
+1. [HQChart实战教程36-数字货币币安对接-uniapp版本](https://jones2000.github.io/HQChart/document/uniapp_binance.html)<br>
+1. [HQChart实战教程36.2-数字货币Gate.IO对接-uniapp版本](https://jones2000.github.io/HQChart/document/uniapp_gateio.html)<br>
 2. [HQChart实战教程41-新浪+腾讯A股数据源对接-uniapp版本](https://blog.csdn.net/jones2000/article/details/117139756)<br>
 3. [HQChart实战教程42-新浪期货数据源对接-uniapp版本](https://blog.csdn.net/jones2000/article/details/117757956)<br>
 4. [股票当日分时图例子,使用东方财富网页数据](https://download.csdn.net/download/jones2000/22589484)<br>
@@ -404,10 +583,42 @@ React 例子:[demo-react.md](/教程/demo-react.md) <br>
 20. [HQChart实战教程50 - 自定义指标栏工具按钮](https://blog.csdn.net/jones2000/article/details/122950050)<br>
 21. [HQChart实战教程51 - 自定义指标列表](https://blog.csdn.net/jones2000/article/details/123538617)<br>
 22. [HQChart实战教程52 - APP中使用DRAWICON绘制图标](https://jones2000.blog.csdn.net/article/details/124142225)<br>
-23. [HQChart实战教程53 - 动调指定标识K线区间段背景颜色](https://blog.csdn.net/jones2000/article/details/124558493)<br>
+23. [HQChart实战教程53 - 动态指定标识K线区间段背景颜色](https://blog.csdn.net/jones2000/article/details/124558493)<br>
+
+## 高级应用实战教程2(付费文章)
+1. [HQChart实战教程54-renko砖形K线图](https://jones2000.blog.csdn.net/article/details/128461885)  
+2. [HQChart实战教程55-heatmap热力图](https://jones2000.blog.csdn.net/article/details/128467231)  
+3. [HQChart实战教程56-限制指标周期](https://blog.csdn.net/jones2000/article/details/128592810)  
+4. [HQChart实战教程57-远程指标提示信息](https://jones2000.blog.csdn.net/article/details/128652645)
+5. [HQChart实战教程58-K线主图仿tradingview](https://blog.csdn.net/jones2000/article/details/128795059)  
+6. [HQChart实战教程59-深度图定制Tooltip输出内容](https://jones2000.blog.csdn.net/article/details/129951576)  
+7. [HQChart实战教程60-如何定制十字光标输出内容](https://jones2000.blog.csdn.net/article/details/130079468)  
+8. [HQChart实战教程61-自定义十字星K线颜色](https://blog.csdn.net/jones2000/article/details/130551867)    
+9. [HQChart实战教程62-自定义K线标题栏](https://jones2000.blog.csdn.net/article/details/131174277)   
+10. [HQChart实战教程63-自定义手机端K线tooltip显示数据](https://jones2000.blog.csdn.net/article/details/131206706)    
+11. [HQChart实战教程64-自定义分时图标题栏](https://jones2000.blog.csdn.net/article/details/131319341)  
+12. [HQChart实战教程65-自定义手机端分时图tooltip显示数据](https://jones2000.blog.csdn.net/article/details/131325837)   
+13. [HQChart实战教程68-自定义分时图PC端tooltip显示数据](https://blog.csdn.net/jones2000/article/details/134182120)    
+14. [HQChart实战教程69-分时图主图如何设置指标](https://jones2000.blog.csdn.net/article/details/136160187)   
+15. [HQChart实战教程70-K线图增加成本线](https://jones2000.blog.csdn.net/article/details/136687070)   
+16. [HQChart实战教程72-美股盘前,盘中,盘后分时图](https://blog.csdn.net/jones2000/article/details/138870447)   
+17. [HQChart实战教程74-自定义指标标题栏](https://jones2000.blog.csdn.net/article/details/140488167)  
+18. [HQChart实战教程75-分时图回放](https://blog.csdn.net/jones2000/article/details/140682155)   
+19. [HQChart实战教程76-自定义Y轴刻度线](https://jones2000.blog.csdn.net/article/details/140949881)    
+20. [HQChart实战教程77-手动创建线段类画图工具](https://jones2000.blog.csdn.net/article/details/142188981)   
+21. [HQChart使用教程30-K线图如何对接第3方数据43-DRAWTABLE数据结构](https://jones2000.blog.csdn.net/article/details/144753902)   
+22. [HQChart使用教程30-K线图如何对接第3方数据44-DRAWPIE数据结构](https://jones2000.blog.csdn.net/article/details/145002191)  
+23. [HQChart使用教程30-K线图如何对接第3方数据45-DRAWRADAR数据结构](https://jones2000.blog.csdn.net/article/details/145306356)   
 
 ## HQChart报价列表高级应用教程(付费文章)
-1. [HQChart报价列表高级应用教程1-雪球数据对接报价列表](https://blog.csdn.net/jones2000/article/details/124759574)<br>
+1. [HQChart报价列表高级应用教程1-雪球数据对接报价列表](https://blog.csdn.net/jones2000/article/details/124759574)   
+2. [HQChart报价列表高级应用教程2-东方财富数据对接自选股列表](https://blog.csdn.net/jones2000/article/details/124940054)   
+3. [HQChart报价列表高级应用教程3-雪球数据对接报价列表uniapp版本](https://blog.csdn.net/jones2000/article/details/128637380)    
+4. [HQChart报价列表高级应用教程4-股票名称增加类型图标](https://blog.csdn.net/jones2000/article/details/128692571)    
+5. [HQChart报价列表高级应用教程5-自定义单元格文字颜色](https://jones2000.blog.csdn.net/article/details/129665704)  
+6. [HQChart报价列表高级应用教程6-自定义列数据对接](https://jones2000.blog.csdn.net/article/details/129678481)  
+7. [HQChart报价列表高级应用教程7-走势列数据对接](https://blog.csdn.net/jones2000/article/details/140163584)   
+8. [HQChart报价列表高级应用教程8-名称列样式说明](https://jones2000.blog.csdn.net/article/details/144105144)   
 
 
 ## 设计文档:
@@ -434,56 +645,55 @@ React 例子:[demo-react.md](/教程/demo-react.md) <br>
 
 # 5.VUE 行情项目
 [代码地址(vuehqchart)](/vuehqchart) <br>
-![走势图2](/小程序行情模块用例/image/pch5hq.PNG)
-[行情页面地址(v1.0）](https://opensource2.zealink.com/vuehqweb/hq.demo.page.html) <br><br>
-![历史高频数据查询图2](/小程序行情模块用例/image/pch5history.PNG)
-[查询页面地址](https://opensource2.zealink.com/vuehqweb/queryContent.demo.page.html) <br><br>
-![多周期图2](/小程序行情模块用例/image/pch5hq2.png)
-[多周期页面地址](https://opensource2.zealink.com/vuehqweb/stockmultiperiod.demo.page.html) <br><br>
-![综合排名2](/小程序行情模块用例/image/pch5hq3.png)
-[综合排名页面地址](https://opensource2.zealink.com/vuehqweb/stockmultiorder.demo.page.html) <br><br>
-   
+![大图](/小程序行情模块用例/image/pch5hq.PNG)   
+页面名称 "hq.demo.page.html"   
+
+![多周期图2](/小程序行情模块用例/image/pch5hq2.png)   
+页面名称"stockmultiperiod.demo.page.html"
+
+
 ## 基于VUE版本给客户开发的样例
-![PC行情页面](/小程序行情模块用例/image/hqchart_pc_demo1.png) <br>
-[指数行情页面黑色风格](https://opensource2.zealink.com/cninfoHq/oneStockHq.html?symbol=000001.sh&colorType=black) <br>
-[个股行情页面白色风格](https://opensource2.zealink.com/cninfoHq/oneStockHq.html?symbol=000001.sz) <br>
-[代码地址(vue.demo/infoHqdemo)](/vue.demo/infoHqdemo) <br>
+![PC行情页面](/小程序行情模块用例/image/hqchart_pc_demo1.png)    
+[示例地址(https://jones2000.github.io/HQChart/vue.demo/infoHqdemo/release/index.html)](https://jones2000.github.io/HQChart/vue.demo/infoHqdemo/release/index.html)    
+[代码地址(vue.demo/infoHqdemo)](/vue.demo/infoHqdemo)   
 
 ## VUE版本手机端样例1
 ![手机端行情页面](/小程序行情模块用例/image/hchart_phone_1.png) <br>
-[手机端行情页面](https://opensource2.zealink.com/product/hqNewdemoH5/stockHq.html#/StockHq)<br>
+[示例地址(https://jones2000.github.io/HQChart/vue.demo/hq_h5_pages/release/stockHq.html)](https://jones2000.github.io/HQChart/vue.demo/hq_h5_pages/release/stockHq.html)     
 [代码地址(vue.demo/hq_h5_pages)](/vue.demo/hq_h5_pages) <br>
 
 ## VUE版本手机端样例2 黑色风格
 ![手机端行情页面](/小程序行情模块用例/image/hqchart_phone_3.png) <br>
 ![手机端行情页面](/小程序行情模块用例/image/hqchart_phone_4.png) <br>
-[手机端行情页面](https://opensource2.zealink.com/hqweb/hq_h5_demo_black/stockHq.html#/StockHq)<br>
-[代码地址(vue.demo/hq_h5_pages)](/vue.demo/hq_h5_demo_black) <br>
+[示例地址(https://jones2000.github.io/HQChart/vue.demo/hq_h5_demo_black/release/stockHq.html)](https://jones2000.github.io/HQChart/vue.demo/hq_h5_demo_black/release/stockHq.html)   
+[代码地址(vue.demo/hq_h5_demo_black)](/vue.demo/hq_h5_demo_black)   
 
 
 ## js页面样例
 ![手机端行情页面](/小程序行情模块用例/image/hqchart_phone_2.png) <br>
-[个股详情手机端h5](https://opensource2.zealink.com/hqweb/hqpages/stockpage.html?) <br>
 [代码地址(webhqchart.demo/h5demo)](/webhqchart.demo/h5demo) <br>
 [VUE代码地址(vue.demo/stockpage_h5)](/vue.demo/stockpage_h5) <br>
 
-## 第3方数据对接样例
-1. 数字货币对接 <br>
-   数据来源： https://www.coinzeus.io/cn <br>
-   ![行情页面](/小程序行情模块用例/image/hqchart_bit_demo1.png) <br>
-   [h5测试页面](https://opensource.zealink.com/hqweb/bitdemo/stockhq.html) <br>
-   [代码地址(vue.demo/bitdemo)](/vue.demo/bitdemo) <br>
-
-
-# QQ交流群(950092318) 
-有bug,问题,新的功能需求都可以在QQ群里提 <br>
-![QQ群](/小程序行情模块用例/image/qqcode.png)
-
-# 商务
-定制开发,合作等商务事宜请联系 QQ:22047567 
 
 # 奖项
 ![GVP](/小程序行情模块用例/image/gvp.jpg)
 
 # 赞助
 ![微信二维码](/小程序行情模块用例/image/wx_code.PNG)
+
+# Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=jones2000/HQChart&type=Date)](https://star-history.com/#jones2000/HQChart&Date)
+
+
+# HQChart付费技术支持
+
+**注意:技术支持,不负责开发和部署.**
+
+|名称|费用(每月)|内容|
+| :-: | :-: | :-: | 
+|单次技术支持| 500  |   |
+|基础技术支持| 2000 |回答插件相关问题，如有对应的教程，提供对应的教程地址 |  
+|高级技术支持| 5000 |回答插件相关问题，如有对应的教程，提供对应的教程地址, 对复杂的问题，可以提供demo示例. 如需自己定制图形，提供外挂图形接口.(定制图形由客户自己开发) |  
+|图形定制开发| 5000起 |费用看具体的需求,评估开发工时后算总费用(工时费大概450/小时), 定制的部分提供源码，和开源的代码是分开的，以HQChart扩展插件的方式挂接进去。预付:40%,交付代码:50%,尾款:10% |  
+

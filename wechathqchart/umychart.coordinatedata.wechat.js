@@ -10,6 +10,8 @@
     各个品种分钟走势图坐标信息
 */
 
+import { ChartData } from "./umychart.data.wechat";
+
 function GetLocalTime(i)    //得到标准时区的时间的函数
 {
     if (typeof i !== 'number') return;
@@ -37,8 +39,11 @@ var MARKET_SUFFIX_NAME=
     SHFE: '.SHF',        //上期所 (Shanghai Futures Exchange)
     SHFE2: '.SHFE',       //上期所 (Shanghai Futures Exchange)
     CFFEX: '.CFE',       //中期所 (China Financial Futures Exchange)
+    CFFEX2:'.CFFEX',     //中期所 (China Financial Futures Exchange)
     DCE: '.DCE',         //大连商品交易所(Dalian Commodity Exchange)
     CZCE: '.CZC',        //郑州期货交易所
+    GZFE:".GZFE",        //广州期货交易所
+
     USA: '.USA',         //美股
     FTSE: '.FTSE',       //富时中国
 
@@ -58,6 +63,11 @@ var MARKET_SUFFIX_NAME=
     TW:".TW",            //台湾股票 9:00-13:30
     JP:".JP",            //日本股票 9:00-11:30, 12:30-15:00
 
+    //越南股市
+    HSX:".HSX",         //HSX胡志明交易所
+    HNX:".HNX",         //HNX河內交易所
+    UPCOM:".UPCOM",     //UPCOM未上市公司交易所
+
     ET: '.ET',           //其他未知的品种
 
     IsET: function (upperSymbol) 
@@ -69,6 +79,24 @@ var MARKET_SUFFIX_NAME=
     IsETShowAvPrice: function (upperSymbol)   //是否显示均价
     {
         return false;
+    },
+
+    IsHSX:function(upperSymbol)
+    {
+        if (!upperSymbol) return false;
+        return upperSymbol.indexOf(this.HSX)>0;
+    },
+
+    IsHNX:function(upperSymbol)
+    {
+        if (!upperSymbol) return false;
+        return upperSymbol.indexOf(this.HNX)>0;
+    },
+
+    IsUPCOM:function(upperSymbol)
+    {
+        if (!upperSymbol) return false;
+        return upperSymbol.indexOf(this.UPCOM)>0;
     },
 
     IsNYMEX: function (upperSymbol) 
@@ -177,6 +205,11 @@ var MARKET_SUFFIX_NAME=
 
     IsSHO: function (upperSymbol) 
     {
+        if (this.IsSH(upperSymbol)) //10007211.sh
+        {
+            if (upperSymbol.length==11 && upperSymbol[0]=='1') return true;
+        }
+
         var pos = upperSymbol.length - this.SHO.length;
         var find = upperSymbol.indexOf(this.SHO);
         return find == pos;
@@ -184,6 +217,11 @@ var MARKET_SUFFIX_NAME=
 
     IsSZO: function(upperSymbol)
     {
+        if (this.IsSZ(upperSymbol)) //90004047.sz
+        {
+            if (upperSymbol.length==11 && upperSymbol[0]=='9') return true;
+        }
+
         var pos = upperSymbol.length - this.SZO.length;
         var find = upperSymbol.indexOf(this.SZO);
         return find == pos;
@@ -221,7 +259,9 @@ var MARKET_SUFFIX_NAME=
     IsCFFEX: function (upperSymbol) 
     {
         if (!upperSymbol) return false;
-        return upperSymbol.indexOf(this.CFFEX) > 0;
+        if (upperSymbol.indexOf(this.CFFEX) > 0) return true;
+        if (upperSymbol.indexOf(this.CFFEX2) > 0) return true;
+        return false;
     },
 
     IsDCE: function (upperSymbol) 
@@ -236,13 +276,23 @@ var MARKET_SUFFIX_NAME=
         return upperSymbol.indexOf(this.CZCE) > 0;
     },
 
+    IsGZFE:function(upperSymbol)
+    {
+        if (!upperSymbol) return false;
+        return upperSymbol.indexOf(this.GZFE) > 0;
+    },
+
     IsChinaFutures: function (upperSymbol)   //是否是国内期货
     {
-        return this.IsCFFEX(upperSymbol) || this.IsCZCE(upperSymbol) || this.IsDCE(upperSymbol) || this.IsSHFE(upperSymbol);
+        if (!upperSymbol) return false;
+
+        return this.IsCFFEX(upperSymbol) || this.IsCZCE(upperSymbol) || this.IsDCE(upperSymbol) || this.IsSHFE(upperSymbol) || this.IsGZFE(upperSymbol) ;
     },
 
     IsFutures: function (upperSymbol) //是否是期货 包含国外的
     {
+        if (!upperSymbol) return false;
+        
         return this.IsChinaFutures(upperSymbol) ||
             this.IsNYMEX(upperSymbol) || this.IsCOMEX(upperSymbol) || this.IsNYBOT(upperSymbol) || this.IsCBOT(upperSymbol) ||
             this.IsLME(upperSymbol);
@@ -308,6 +358,14 @@ var MARKET_SUFFIX_NAME=
             {
                 if (upperSymbol.charAt(1) == '0' && upperSymbol.charAt(2) == '2') return true;  //002 中小板
                 if (upperSymbol.charAt(1) != '7' && upperSymbol.charAt(1) != '8') return true;
+            }
+            else if (upperSymbol.charAt(0)=='3')
+            {
+                if (upperSymbol.charAt(1)=='0')
+                {
+                    if (upperSymbol.charAt(2)=='0') return true;    //创业板 300XXX.sz
+                    if (upperSymbol.charAt(2)=='1') return true;    //创业板 301XXX.sz
+                }
             }
         }
 
@@ -449,6 +507,16 @@ var MARKET_SUFFIX_NAME=
     {
         return 2;
     },
+
+    GetSHDecimal:function(symbol)
+    {
+        return 2;
+    },
+
+    GetSZDecimal:function(symbol)
+    {
+        return 2;
+    },
     
     GetFHKDecimal: function (symbol)  //港股指数期货 小数位数
     {
@@ -486,6 +554,21 @@ var MARKET_SUFFIX_NAME=
     },
 
     GetJPDecimal:function(symbol)
+    {
+        return 2;
+    },
+
+    GetHSXDecimal:function(symbol)
+    {
+        return 2;
+    },
+
+    GetHNXDecimal:function(symbol)
+    {
+        return 2;
+    },
+
+    GetUPCOMDecimal:function(symbol)
     {
         return 2;
     },
@@ -567,16 +650,24 @@ var MARKET_SUFFIX_NAME=
         return {Max:0.1 , Min:-0.1}; //[10% - -10%]
     },
 
-    IsEnableRight:function(period, symbol)    //是否支持复权
+    IsEnableRight:function(period, symbol, rightFormula)    //是否支持复权
     {
         if (!MARKET_SUFFIX_NAME.IsSHSZStockA(symbol) && !MARKET_SUFFIX_NAME.IsBJStock(symbol)) return false;
+        if (ChartData.IsNumber(rightFormula) && rightFormula>=1) return true;        //复权因子复权
+        if (ChartData.IsMinutePeriod(period,true)) return false;                    //内置分钟K线不支持复权
 
         //内置日线线支持复权,其他不支持复权
-        var CUSTOM_DAY_PERIOD_START = 40000, CUSTOM_DAY_PERIOD_END = 49999;
-        if (period == 0 || period == 1 || period == 2 || period == 3 || period == 9 || period==21 ) return true;
-        if (period > CUSTOM_DAY_PERIOD_START && period <= CUSTOM_DAY_PERIOD_END) return true;
-
         return false;
+    },
+    
+    //获取成交量单位
+    GetVolUnit:function(upperSymbol)
+    {
+        if (!upperSymbol) return 1;
+        if (MARKET_SUFFIX_NAME.IsSHSZ(upperSymbol)) return 100; //单位手=100股
+        if (MARKET_SUFFIX_NAME.IsBJ(upperSymbol)) return 100;   //单位手=100股
+
+        return 1;
     }
 
 }
@@ -586,6 +677,9 @@ var MARKET_SUFFIX_NAME=
 function MinuteTimeStringData() 
 {
     this.SHSZ = null;       //上海深证交易所时间
+    this.BJ=null;           //北交所
+    this.SHO=null;          //上海期权交易时间
+    this.SZO=null;          //深证期权交易时间
     this.HK = null;         //香港交易所时间
     this.Futures=new Map(); //期货交易时间 key=时间名称 Value=数据
     this.USA = null;        //美股交易时间
@@ -618,10 +712,22 @@ function MinuteTimeStringData()
         return this.BJ;
     }
 
+    this.GetBJ=function(upperSymbol)
+    {
+        if (!this.BJ) this.BJ=this.CreateBJData();
+        return this.BJ;
+    }
+
     this.GetSHO = function () 
     {
         if (!this.SHO) this.SHO = this.CreateSHOData();
         return this.SHO;
+    }
+
+    this.GetSZO=function(upperSymbol)
+    {
+        if (!this.SZO) this.SZO=this.CreateSZOData();
+        return this.SZO;
     }
 
     this.GetHK=function(upperSymbol)
@@ -640,6 +746,24 @@ function MinuteTimeStringData()
     {
         if (this.JP) this.JP=this.CreateJPData();
         return this.JP;
+    }
+
+    this.GetHSX=function(upperSymbol)
+    {
+        if (this.HSX) this.HSX=this.CreateHSXData();
+        return this.HSX;
+    }
+
+    this.GetHNX=function(upperSymbol)
+    {
+        if (this.HNX) this.HSX=this.CreateHNXData();
+        return this.HNX;
+    }
+
+    this.GetUPCOM=function(upperSymbol)
+    {
+        if (this.UPCOM) this.UPCOM=this.CreateUPCOMData();
+        return this.UPCOM;
     }
 
     this.GetFutures=function(splitData)
@@ -695,6 +819,18 @@ function MinuteTimeStringData()
         return this.CreateTimeData(TIME_SPLIT);
     }
 
+    this.CreateBJData=function()
+    {
+        const TIME_SPLIT =
+            [
+                { Start: 925, End: 925 },
+                { Start: 930, End: 1130 },
+                { Start: 1300, End: 1500 }
+            ];
+
+        return this.CreateTimeData(TIME_SPLIT);
+    }
+
     this.CreateSHOData = function () 
     {
         const TIME_SPLIT =
@@ -702,6 +838,17 @@ function MinuteTimeStringData()
                 { Start: 930, End: 1129 },
                 { Start: 1300, End: 1500 }
             ];
+
+        return this.CreateTimeData(TIME_SPLIT);
+    }
+
+    this.CreateSZOData=function()
+    {
+        const TIME_SPLIT =
+        [
+            { Start: 930, End: 1129 },
+            { Start: 1300, End: 1500 }
+        ];
 
         return this.CreateTimeData(TIME_SPLIT);
     }
@@ -736,6 +883,21 @@ function MinuteTimeStringData()
         ];
 
         return this.CreateTimeData(TIME_SPLIT);
+    }
+
+    this.CreateHSXData=function()
+    {
+        throw {Name:'MinuteTimeStringData::CreateHSXData', Error:'not implement'};
+    }
+
+    this.CreateHNXData=function()
+    {
+        throw {Name:'MinuteTimeStringData::CreateHNXData', Error:'not implement'};
+    }
+
+    this.CreateUPCOMData=function()
+    {
+        throw {Name:'MinuteTimeStringData::CreateUPCOMData', Error:'not implement'};
     }
 
     this.CreateUSAData=function()
@@ -833,14 +995,15 @@ function MinuteTimeStringData()
         if (!symbol) return this.SHSZ;
 
         var upperSymbol = symbol.toLocaleUpperCase(); //转成大写
+        if (MARKET_SUFFIX_NAME.IsSHO(upperSymbol)) return this.GetSHO();
+        if (MARKET_SUFFIX_NAME.IsSZO(upperSymbol)) return this.GetSZO();
         if (MARKET_SUFFIX_NAME.IsSH(upperSymbol) || MARKET_SUFFIX_NAME.IsSZ(upperSymbol) || MARKET_SUFFIX_NAME.IsSHSZIndex(upperSymbol)) return this.GetSHSZ(upperSymbol);
         if (MARKET_SUFFIX_NAME.IsBJ(upperSymbol)) return this.GetBJ(upperSymbol);
-        if (MARKET_SUFFIX_NAME.IsSHO(upperSymbol) || MARKET_SUFFIX_NAME.IsSZO(upperSymbol)) return this.GetSHO();
         if (MARKET_SUFFIX_NAME.IsHK(upperSymbol)) return this.GetHK(upperSymbol);
         if (MARKET_SUFFIX_NAME.IsTW(upperSymbol)) return this.GetTW(upperSymbol);
         if (MARKET_SUFFIX_NAME.IsJP(upperSymbol)) return this.GetJP(upperSymbol);
         if (MARKET_SUFFIX_NAME.IsUSA(upperSymbol)) return this.GetUSA(true);
-        if (MARKET_SUFFIX_NAME.IsCFFEX(upperSymbol) || MARKET_SUFFIX_NAME.IsCZCE(upperSymbol) || MARKET_SUFFIX_NAME.IsDCE(upperSymbol) || MARKET_SUFFIX_NAME.IsSHFE(upperSymbol))
+        if (MARKET_SUFFIX_NAME.IsCFFEX(upperSymbol) || MARKET_SUFFIX_NAME.IsCZCE(upperSymbol) || MARKET_SUFFIX_NAME.IsDCE(upperSymbol) || MARKET_SUFFIX_NAME.IsSHFE(upperSymbol) || MARKET_SUFFIX_NAME.IsGZFE(upperSymbol))
         {
             var splitData = g_FuturesTimeData.GetSplitData(upperSymbol);
             if (!splitData) return null;
@@ -851,6 +1014,11 @@ function MinuteTimeStringData()
         if (MARKET_SUFFIX_NAME.IsFHK(upperSymbol)) return this.GetFHK();
         if (MARKET_SUFFIX_NAME.IsET(upperSymbol)) return this.GetET(upperSymbol);
         if (MARKET_SUFFIX_NAME.IsBIT(upperSymbol)) return this.GetBIT(upperSymbol);
+
+        //越南股市
+        if (MARKET_SUFFIX_NAME.IsHSX(upperSymbol)) return this.GetHSX(upperSymbol);
+        if (MARKET_SUFFIX_NAME.IsHNX(upperSymbol)) return this.GetHNX(upperSymbol);
+        if (MARKET_SUFFIX_NAME.IsUPCOM(upperSymbol)) return this.GetUPCOM(upperSymbol);
 
         if (MARKET_SUFFIX_NAME.IsNYMEX(upperSymbol))    //纽约期货交易所
         {
@@ -1325,19 +1493,21 @@ function MinuteCoordinateData()
         else 
         {
             var upperSymbol = symbol.toLocaleUpperCase(); //转成大写
-            if (MARKET_SUFFIX_NAME.IsSH(upperSymbol) || MARKET_SUFFIX_NAME.IsSZ(upperSymbol))
+            if (MARKET_SUFFIX_NAME.IsSHO(upperSymbol))
+                data=this.GetSHOData(upperSymbol,width);
+            else if (MARKET_SUFFIX_NAME.IsSZO(upperSymbol))
+                data=this.GetSZOData(upperSymbol,width);
+            else if (MARKET_SUFFIX_NAME.IsSH(upperSymbol) || MARKET_SUFFIX_NAME.IsSZ(upperSymbol) || MARKET_SUFFIX_NAME.IsSHSZIndex(upperSymbol) )
                 data = this.GetSHSZData(upperSymbol, width); 
             else if (MARKET_SUFFIX_NAME.IsBJ(upperSymbol))
                 data=this.GetBJData(upperSymbol,width);
-            else if (MARKET_SUFFIX_NAME.IsSHO(upperSymbol) || MARKET_SUFFIX_NAME.IsSZO(upperSymbol))
-                data = this.GetSHOData(upperSymbol, width);
             else if (MARKET_SUFFIX_NAME.IsHK(upperSymbol))
                 data=this.GetHKData(upperSymbol,width);
             else if (MARKET_SUFFIX_NAME.IsTW(upperSymbol))
                 data=this.GetTWData(upperSymbol,width);
             else if (MARKET_SUFFIX_NAME.IsJP(upperSymbol))
                 data=this.GetJPData(upperSymbol,width);
-            else if (MARKET_SUFFIX_NAME.IsCFFEX(upperSymbol) || MARKET_SUFFIX_NAME.IsCZCE(upperSymbol) || MARKET_SUFFIX_NAME.IsDCE(upperSymbol) || MARKET_SUFFIX_NAME.IsSHFE(upperSymbol))
+            else if (MARKET_SUFFIX_NAME.IsCFFEX(upperSymbol) || MARKET_SUFFIX_NAME.IsCZCE(upperSymbol) || MARKET_SUFFIX_NAME.IsDCE(upperSymbol) || MARKET_SUFFIX_NAME.IsSHFE(upperSymbol) || MARKET_SUFFIX_NAME.IsGZFE(upperSymbol))
                 return this.GetChinatFuturesData(upperSymbol,width);
             else if (MARKET_SUFFIX_NAME.IsUSA(upperSymbol))
                 data = this.GetUSAData(upperSymbol, width);
@@ -1365,6 +1535,12 @@ function MinuteCoordinateData()
                 return  data=this.GetIPEData(upperSymbol,width);
             else if ((MARKET_SUFFIX_NAME.IsBIT(upperSymbol,width)))
                 data=this.GetBITData(upperSymbol,width);
+            else if (MARKET_SUFFIX_NAME.IsHSX(upperSymbol))
+                return  data=this.GetHSXData(upperSymbol,width);
+            else if (MARKET_SUFFIX_NAME.IsHNX(upperSymbol))
+                return  data=this.GetHNXData(upperSymbol,width);
+            else if (MARKET_SUFFIX_NAME.IsUPCOM(upperSymbol))
+                return  data=this.GetUPCOMData(upperSymbol,width);
         }
 
         //console.log('[MiuteCoordinateData]', width);
@@ -1516,9 +1692,30 @@ function MinuteCoordinateData()
         return result;
     }
 
+    this.GetSZOData=function(upperSymbol,width)
+    {
+        var result=SHO_MINUTE_X_COORDINATE;
+        return result;
+    }
+
     this.GetJPData=function(upperSymbol,width)
     {
         throw {Name:'MinuteCoordinateData::GetJPData', Error:'not implement'};
+    }
+
+    this.GetHSXData=function(upperSymbol,width)
+    {
+        throw {Name:'MinuteCoordinateData::GetHSXData', Error:'not implement'};
+    }
+
+    this.GetHNXData=function(upperSymbol,width)
+    {
+        throw {Name:'MinuteCoordinateData::GetHNXData', Error:'not implement'};
+    }
+
+    this.GetUPCOMData=function(upperSymbol,width)
+    {
+        throw {Name:'MinuteCoordinateData::GetUPCOMData', Error:'not implement'};
     }
 }
 
@@ -1556,8 +1753,8 @@ function FuturesTimeData()
                 [
                     { Value: 900, Text: '9:00' },
                     { Value: 1000, Text: '10:00' },
-                    { Value: 1330, Text: '13:30' },
-                    { Value: 1430, Text: '14:30' },
+                    { Value: 1100, Text: '11:00' },
+                    { Value: 1400, Text: '14:00' },
                     { Value: 1500, Text: '15:00' },
                 ],
                 Min:   //最小模式  
@@ -1948,12 +2145,15 @@ function FuturesTimeData()
         [MARKET_SUFFIX_NAME.SHFE + '-AG', {Time:5,Decimal:0,Name:"白银"}],
         [MARKET_SUFFIX_NAME.SHFE + '-AU', {Time:5,Decimal:2,Name:"黄金"}],
         [MARKET_SUFFIX_NAME.SHFE + '-SS', {Time:4,Decimal:0,Name:'不锈钢'}],
-
+        [MARKET_SUFFIX_NAME.SHFE + '-AO', {Time:4,Decimal:0,Name:'氧化铝'}],
+        [MARKET_SUFFIX_NAME.SHFE + '-BR', {Time:6,Decimal:0,Name:'合成橡胶'}],
+        
         //上期能源
         [MARKET_SUFFIX_NAME.SHFE + '-NR', {Time:6,Decimal:1,Name:'20号胶'}],
         [MARKET_SUFFIX_NAME.SHFE + '-SC', {Time:5,Decimal:1,Name:'原油'}],
         [MARKET_SUFFIX_NAME.SHFE + '-LU', {Time:6,Decimal:0,Name:'低硫燃油'}],
         [MARKET_SUFFIX_NAME.SHFE + '-BC', {Time:4,Decimal:0,Name:'国际铜'}],
+        [MARKET_SUFFIX_NAME.SHFE + '-EC', {Time:0,Decimal:0,Name:'集运指数'}],
 
         //郑州期货交易所
         [MARKET_SUFFIX_NAME.CZCE + '-CF', {Time:6,Decimal:0,Name:"棉花"}],
@@ -1987,6 +2187,7 @@ function FuturesTimeData()
         [MARKET_SUFFIX_NAME.CZCE + '-SA', {Time:6,Decimal:0, Name:"纯碱"}],
         [MARKET_SUFFIX_NAME.CZCE + '-PF', {Time:6,Decimal:0, Name:"短纤"}],
         [MARKET_SUFFIX_NAME.CZCE + '-PK', {Time:0,Decimal:0, Name:"花生"}],
+        [MARKET_SUFFIX_NAME.CZCE + '-PR', {Time:6,Decimal:0, Name:"瓶片"}],
         
         //中期所
         [MARKET_SUFFIX_NAME.CFFEX + '-TF', {Time:1,Decimal:3,Name:"二债"}],
@@ -1994,6 +2195,14 @@ function FuturesTimeData()
         [MARKET_SUFFIX_NAME.CFFEX + '-IH', {Time:2,Decimal:1,Name:'上证股指期货'}],
         [MARKET_SUFFIX_NAME.CFFEX + '-IC', {Time:2,Decimal:1,Name:'中证股指期货'}],
         [MARKET_SUFFIX_NAME.CFFEX + '-IF', {Time:2,Decimal:1,Name:'沪深股指期货'}],
+        [MARKET_SUFFIX_NAME.CFFEX + '-IM', {Time:2,Decimal:1,Name:'中证1000股指期货'}],
+        [MARKET_SUFFIX_NAME.CFFEX + '-IO', {Time:2,Decimal:1,Name:'沪深300股指期权'}],
+        [MARKET_SUFFIX_NAME.CFFEX + '-MO', {Time:2,Decimal:1,Name:'中证1000股指期权'}],
+        [MARKET_SUFFIX_NAME.CFFEX + '-HO', {Time:2,Decimal:1,Name:'上证50股指期权'}],
+
+        //广州期货交易所
+        [MARKET_SUFFIX_NAME.GZFE+'-SI', {Time:0,Decimal:2,Name:"工业硅"}],
+        [MARKET_SUFFIX_NAME.GZFE+'-LC', {Time:0,Decimal:2,Name:"碳酸锂"}]
     ]);
 
     this.MAP_ONEWORD = new Map([
@@ -2037,6 +2246,11 @@ function FuturesTimeData()
         {
             oneWordName = MARKET_SUFFIX_NAME.CZCE + '-' + oneWord;
             twoWordsName = MARKET_SUFFIX_NAME.CZCE + '-' + twoWords;
+        }
+        else if (MARKET_SUFFIX_NAME.IsGZFE(upperSymbol))    //广州期货交易所
+        {
+            oneWordName = MARKET_SUFFIX_NAME.GZFE + '-' + oneWord;
+            twoWordsName = MARKET_SUFFIX_NAME.GZFE + '-' + twoWords;
         }
 
         if (this.MAP_TWOWORDS.has(twoWordsName)) 
@@ -3464,12 +3678,47 @@ function GetfloatPrecision(symbol)  //获取小数位数
     else if (MARKET_SUFFIX_NAME.IsHK(upperSymbol)) defaultfloatPrecision=MARKET_SUFFIX_NAME.GetHKDecimal(upperSymbol);
     else if (MARKET_SUFFIX_NAME.IsTW(upperSymbol)) defaultfloatPrecision=MARKET_SUFFIX_NAME.GetTWDecimal(upperSymbol);
     else if (MARKET_SUFFIX_NAME.IsJP(upperSymbol)) defaultfloatPrecision=MARKET_SUFFIX_NAME.GetJPDecimal(upperSymbol);
+    else if (MARKET_SUFFIX_NAME.IsHSX(upperSymbol)) defaultfloatPrecision=MARKET_SUFFIX_NAME.GetHSXDecimal(upperSymbol);
+    else if (MARKET_SUFFIX_NAME.IsHNX(upperSymbol)) defaultfloatPrecision=MARKET_SUFFIX_NAME.GetHNXDecimal(upperSymbol);
+    else if (MARKET_SUFFIX_NAME.IsUPCOM(upperSymbol)) defaultfloatPrecision=MARKET_SUFFIX_NAME.GetUPCOMDecimal(upperSymbol);
+
+    else if (MARKET_SUFFIX_NAME.IsSZ(upperSymbol)) defaultfloatPrecision=MARKET_SUFFIX_NAME.GetSZDecimal(upperSymbol);
+    else if (MARKET_SUFFIX_NAME.IsSH(upperSymbol)) defaultfloatPrecision=MARKET_SUFFIX_NAME.GetSHDecimal(upperSymbol);
+
     else defaultfloatPrecision=MARKET_SUFFIX_NAME.GetDefaultDecimal(upperSymbol);
 
     return defaultfloatPrecision;
 }
 
 //导出统一使用JSCommon命名空间名
+var JSCommonCoordinateData=
+{
+    MinuteCoordinateData: g_MinuteCoordinateData,
+    MinuteTimeStringData: g_MinuteTimeStringData,
+    MARKET_SUFFIX_NAME: MARKET_SUFFIX_NAME,
+    GetfloatPrecision: GetfloatPrecision
+};
+
+export
+{
+    JSCommonCoordinateData,
+
+    MARKET_SUFFIX_NAME,
+    g_FuturesTimeData,
+    g_NYMEXTimeData,
+    g_COMEXTimeData,
+    g_NYBOTTimeData,
+    g_LMETimeData,
+    g_CBOTTimeData,
+    g_TOCOMTimeData,
+    g_IPETimeData,
+    GetfloatPrecision,
+
+    g_MinuteCoordinateData,
+    g_MinuteTimeStringData
+};
+
+/*
 module.exports =
 {
     JSCommonCoordinateData:
@@ -3491,3 +3740,4 @@ module.exports =
     JSCommonCoordinateData_Global_IPETimeData: g_IPETimeData,
     JSCommonCoordinateData_GetfloatPrecision: GetfloatPrecision,
 };
+*/

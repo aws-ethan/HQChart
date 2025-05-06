@@ -98,9 +98,7 @@
                     </div>
                 </div>
             </div>
-            <div class="brushTool" v-if="DrawTool.IsShow">
-                <Stockdrawtool @CurrentIcon = "CurrentIcon" @IsShowBrushTool="isShowBrushTool" :topheight="topheight" :totalheight="totalheight"></Stockdrawtool>
-            </div>   
+            
             <!-- 走势图 和 K线图  !-->
             <div :id='ID' ref='divchart' style="width:100%;height:100%">
                 <div class='minute' id="minute" ref="minute"  v-show="Minute.IsShow"></div>
@@ -197,9 +195,9 @@ import $ from 'jquery'
 import HQChart from 'hqchart'
 import 'hqchart/src/jscommon/umychart.resource/css/tools.css'
 import 'hqchart/src/jscommon/umychart.resource/font/iconfont.css'
-var JSCommonStock = HQChart.Stock;
+import HQData from "hqchart/src/jscommon/umychart.vue.testdataV2/umychart.NetworkFilterTest.vue.js"
+
 import StringFormat from 'hqchart/src/jscommon/umychart.vue/stockstringformat.js'
-import Stockdrawtool from '../../../components/stockdrawtool.vue'
 
 function DefaultData()
 {
@@ -245,7 +243,16 @@ DefaultData.GetMinuteOption=function()
             { SplitCount: 5, StringFormat: 0 },
             { SplitCount: 3, StringFormat: 0 },
             { SplitCount: 3, StringFormat: 0 }
-        ]
+        ],
+
+        ExtendChart:    //扩展图形
+        [
+            {Name:'MinutePCTooltip' }, //PC端tooltip
+        ],
+
+        SelectRectDialog:{ Enable:true },
+        SearchIndexDialog:{ Enable:true },
+        ModifyIndexParamDialog:{ Enable:true },
     };
 
     return option;
@@ -294,7 +301,13 @@ DefaultData.GetKLineOption=function()
             { SplitCount: 3, StringFormat: 0, IsShowLeftText: false },
             { SplitCount: 3, StringFormat: 0, IsShowLeftText: false },
             { SplitCount: 3, StringFormat: 0, IsShowLeftText: false }
-        ]
+        ],
+
+        EnablePopMenuV2:true,
+        FloatTooltip:{ Enable:true, },
+        SelectRectDialog:{ Enable:true },
+        SearchIndexDialog:{ Enable:true },
+        ModifyIndexParamDialog:{ Enable:true },
     };
 
     return option;
@@ -602,7 +615,7 @@ export default
         "blackStyle"
         // 'TradeInfoTabWidth',
     ],
-    components:{Stockdrawtool},
+    
     data()
     {
         let data=
@@ -656,10 +669,7 @@ export default
                 ChangePeriodEvent:null, //周期改变事件 function(name)
             },
 
-            DrawTool:
-            {
-                IsShow:false,
-            },
+            
             isIndex: false,
             curveLineTypeMenu,
             compositeTab,
@@ -767,7 +777,9 @@ export default
 
     mounted:function()
     {
-        // console.log(`[StockKLine::mounted]`);
+        var resource=HQChart.Chart.JSChart.GetResource();
+        resource.ToolbarButtonStyle=1;
+
         this.OnSize();
 
         if (this.Minute.IsShow) {
@@ -814,41 +826,13 @@ export default
             
         });
 
-        this.HistoryData = JSCommonStock.JSStock.GetHistoryDayData(this.Symbol);
-        this.HistoryData.InvokeUpdateUICallback = this.HistoryDataCallback;
-        this.HistoryData.RequestData();
+        
 
     },
     methods:
     {
         downloadHistroyData() {
-            var index = this.dataFrequencyMenu.Selected;
-            var val = this.dataFrequencyMenu.Menu[index].Value;
-            $.ajax({
-                url: 'http://opensource.zealink.com/api/KLineCSV',
-                type:"post",
-                dataType: 'json',
-                data:{
-                    "Symbol": this.Symbol,
-                    "QueryDate": {
-                        "StartDate": convertTime(this.value7[0]),
-                        "EndDate": convertTime(this.value7[1])
-                    },
-                    "Period": +val
-                },
-                async:true,
-                success: function (data) 
-                {
-                    if(data.code == 0){
-                        var relativeUrl = data.relativeurl;
-                        window.open('https://downloadcache.zealink.com/'+relativeUrl);
-                    }
-                },
-                error: function (request) 
-                {
-                    console.log(request.message);
-                }
-            });
+            
         },
         historyDataChange() {
             this.changeDateType();
@@ -1042,6 +1026,7 @@ export default
             this.Minute.Option.Symbol=this.Symbol;
             HQChart.Chart.jsChartStyle(this.blackStyle);
             let chart=HQChart.Chart.JSChart.Init(this.$refs.minute);
+            this.Minute.Option.NetworkFilter=(data, callback)=>{ this.NetworkFilter(data, callback); }
             chart.SetOption(this.Minute.Option);
             this.Minute.JSChart=chart;
 
@@ -1083,6 +1068,7 @@ export default
             this.KLine.Option.Symbol=this.Symbol;
             HQChart.Chart.jsChartStyle(this.blackStyle);
             let chart=HQChart.Chart.JSChart.Init(this.$refs.kline);
+            this.KLine.Option.NetworkFilter=(data, callback)=>{ this.NetworkFilter(data, callback); }
             chart.SetOption(this.KLine.Option);
             this.KLine.JSChart=chart;
             
@@ -1139,7 +1125,12 @@ export default
             
         },
 
-        ChangeSymbol:function(symbol)
+        NetworkFilter(data, callback)
+        {
+            HQData.HQData.NetworkFilter(data, callback);
+        },
+
+        ChangeSymbol(symbol)
         {
             if (this.Symbol==symbol) return;
 

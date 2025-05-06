@@ -12,9 +12,14 @@ copyright (c) 2018 jones
 
 function JSUniAppCanvasHelper() { }
 
+JSUniAppCanvasHelper.GetCanvasFont=function(canvas)
+{
+    return canvas.font;
+}
+
 JSUniAppCanvasHelper.MeasureText=function(text, canvas) 
 {
-    var font = canvas.font;
+    var font= JSUniAppCanvasHelper.GetCanvasFont(canvas);
 	var fontSize = 12;
     var pos=font.search('px');
     if (pos>0) 
@@ -39,10 +44,18 @@ JSUniAppCanvasHelper.MeasureText=function(text, canvas)
 		else if (/\./.test(item)) 
 		{
 			width += 2.7;
-		} 
+        } 
+        else if (/,/.test(item)) 
+		{
+			width += 2.7;
+		}
 		else if (/-/.test(item)) 
 		{
 			width += 3.25;
+        } 
+        else if (/_/.test(item)) 
+		{
+			width += 4.5;
 		} 
 		else if (/[\u4e00-\u9fa5]/.test(item)) 
 		{
@@ -73,6 +86,16 @@ JSUniAppCanvasHelper.MeasureText=function(text, canvas)
 }
 
 //导出统一使用JSCommon命名空间名
+var JSCommonUniApp=
+{
+    JSUniAppCanvasHelper: JSUniAppCanvasHelper,
+};
+
+export
+{
+    JSCommonUniApp
+}
+/*
 module.exports =
 {
     JSCommonUniApp:
@@ -80,4 +103,5 @@ module.exports =
         JSUniAppCanvasHelper: JSUniAppCanvasHelper,
     }
 };
+*/
 	
